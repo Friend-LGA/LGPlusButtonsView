@@ -1,0 +1,386 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1946D2D8D0CE8124E0632DEA /* libPods-LGPlusButtonsViewDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 23A4E5C49FE8BEAB57D05B49 /* libPods-LGPlusButtonsViewDemo.a */; };
+		4A3F4B5A1AA8BA51006D9DAA /* PlusViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */; };
+		847A899A1A9F298B004A8413 /* NavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A89971A9F298B004A8413 /* NavigationController.m */; };
+		847A899B1A9F298B004A8413 /* TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A89991A9F298B004A8413 /* TableViewController.m */; };
+		847A899E1A9F2C32004A8413 /* PlusScrollViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */; };
+		84C5B7CD1A9F22C800EEEB24 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C5B7CC1A9F22C800EEEB24 /* main.m */; };
+		84C5B7D01A9F22C800EEEB24 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C5B7CF1A9F22C800EEEB24 /* AppDelegate.m */; };
+		84C5B7D81A9F22C800EEEB24 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84C5B7D71A9F22C800EEEB24 /* Images.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		23A4E5C49FE8BEAB57D05B49 /* libPods-LGPlusButtonsViewDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LGPlusButtonsViewDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A3F4B581AA8BA51006D9DAA /* PlusViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlusViewController.h; sourceTree = "<group>"; };
+		4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlusViewController.m; sourceTree = "<group>"; };
+		6CA3D88515E7F3B71D89BE22 /* Pods-LGPlusButtonsViewDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LGPlusButtonsViewDemo.release.xcconfig"; path = "Pods/Target Support Files/Pods-LGPlusButtonsViewDemo/Pods-LGPlusButtonsViewDemo.release.xcconfig"; sourceTree = "<group>"; };
+		847A89961A9F298B004A8413 /* NavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigationController.h; sourceTree = "<group>"; };
+		847A89971A9F298B004A8413 /* NavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavigationController.m; sourceTree = "<group>"; };
+		847A89981A9F298B004A8413 /* TableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewController.h; sourceTree = "<group>"; };
+		847A89991A9F298B004A8413 /* TableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewController.m; sourceTree = "<group>"; };
+		847A899C1A9F2C32004A8413 /* PlusScrollViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlusScrollViewController.h; sourceTree = "<group>"; };
+		847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlusScrollViewController.m; sourceTree = "<group>"; };
+		84C5B7C71A9F22C800EEEB24 /* LGPlusButtonsViewDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LGPlusButtonsViewDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		84C5B7CB1A9F22C800EEEB24 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		84C5B7CC1A9F22C800EEEB24 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		84C5B7CE1A9F22C800EEEB24 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		84C5B7CF1A9F22C800EEEB24 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		84C5B7D71A9F22C800EEEB24 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		FF64EDB1BA04182CD80346D1 /* Pods-LGPlusButtonsViewDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LGPlusButtonsViewDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-LGPlusButtonsViewDemo/Pods-LGPlusButtonsViewDemo.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		84C5B7C41A9F22C800EEEB24 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1946D2D8D0CE8124E0632DEA /* libPods-LGPlusButtonsViewDemo.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4A3F4B5C1AA8BDAD006D9DAA /* Demo View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				4A3F4B5D1AA8BDBA006D9DAA /* UIView */,
+				4A3F4B5E1AA8BDBE006D9DAA /* UIScrollView */,
+			);
+			name = "Demo View Controllers";
+			sourceTree = "<group>";
+		};
+		4A3F4B5D1AA8BDBA006D9DAA /* UIView */ = {
+			isa = PBXGroup;
+			children = (
+				4A3F4B581AA8BA51006D9DAA /* PlusViewController.h */,
+				4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */,
+			);
+			name = UIView;
+			sourceTree = "<group>";
+		};
+		4A3F4B5E1AA8BDBE006D9DAA /* UIScrollView */ = {
+			isa = PBXGroup;
+			children = (
+				847A899C1A9F2C32004A8413 /* PlusScrollViewController.h */,
+				847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */,
+			);
+			name = UIScrollView;
+			sourceTree = "<group>";
+		};
+		6DC0BC0EF35C3CCDCDDDD0F1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				23A4E5C49FE8BEAB57D05B49 /* libPods-LGPlusButtonsViewDemo.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		83663343D58C23F2EE00B73C /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FF64EDB1BA04182CD80346D1 /* Pods-LGPlusButtonsViewDemo.debug.xcconfig */,
+				6CA3D88515E7F3B71D89BE22 /* Pods-LGPlusButtonsViewDemo.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		84C5B7BE1A9F22C800EEEB24 = {
+			isa = PBXGroup;
+			children = (
+				84C5B7C91A9F22C800EEEB24 /* LGPlusButtonsViewDemo */,
+				84C5B7C81A9F22C800EEEB24 /* Products */,
+				83663343D58C23F2EE00B73C /* Pods */,
+				6DC0BC0EF35C3CCDCDDDD0F1 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		84C5B7C81A9F22C800EEEB24 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				84C5B7C71A9F22C800EEEB24 /* LGPlusButtonsViewDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		84C5B7C91A9F22C800EEEB24 /* LGPlusButtonsViewDemo */ = {
+			isa = PBXGroup;
+			children = (
+				84C5B7CE1A9F22C800EEEB24 /* AppDelegate.h */,
+				84C5B7CF1A9F22C800EEEB24 /* AppDelegate.m */,
+				847A89961A9F298B004A8413 /* NavigationController.h */,
+				847A89971A9F298B004A8413 /* NavigationController.m */,
+				847A89981A9F298B004A8413 /* TableViewController.h */,
+				847A89991A9F298B004A8413 /* TableViewController.m */,
+				4A3F4B5C1AA8BDAD006D9DAA /* Demo View Controllers */,
+				84C5B7D71A9F22C800EEEB24 /* Images.xcassets */,
+				84C5B7CA1A9F22C800EEEB24 /* Supporting Files */,
+			);
+			path = LGPlusButtonsViewDemo;
+			sourceTree = "<group>";
+		};
+		84C5B7CA1A9F22C800EEEB24 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				84C5B7CB1A9F22C800EEEB24 /* Info.plist */,
+				84C5B7CC1A9F22C800EEEB24 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		84C5B7C61A9F22C800EEEB24 /* LGPlusButtonsViewDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84C5B7EA1A9F22C800EEEB24 /* Build configuration list for PBXNativeTarget "LGPlusButtonsViewDemo" */;
+			buildPhases = (
+				B1C231C3EE6FF3450126BB97 /* Check Pods Manifest.lock */,
+				84C5B7C31A9F22C800EEEB24 /* Sources */,
+				84C5B7C41A9F22C800EEEB24 /* Frameworks */,
+				84C5B7C51A9F22C800EEEB24 /* Resources */,
+				92F9790D16709FEEE544F8D3 /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LGPlusButtonsViewDemo;
+			productName = LGPlusButtonsViewDemo;
+			productReference = 84C5B7C71A9F22C800EEEB24 /* LGPlusButtonsViewDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		84C5B7BF1A9F22C800EEEB24 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "Grigory Lutkov";
+				TargetAttributes = {
+					84C5B7C61A9F22C800EEEB24 = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+				};
+			};
+			buildConfigurationList = 84C5B7C21A9F22C800EEEB24 /* Build configuration list for PBXProject "LGPlusButtonsViewDemo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 84C5B7BE1A9F22C800EEEB24;
+			productRefGroup = 84C5B7C81A9F22C800EEEB24 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				84C5B7C61A9F22C800EEEB24 /* LGPlusButtonsViewDemo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		84C5B7C51A9F22C800EEEB24 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84C5B7D81A9F22C800EEEB24 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		92F9790D16709FEEE544F8D3 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-LGPlusButtonsViewDemo/Pods-LGPlusButtonsViewDemo-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B1C231C3EE6FF3450126BB97 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		84C5B7C31A9F22C800EEEB24 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A3F4B5A1AA8BA51006D9DAA /* PlusViewController.m in Sources */,
+				847A899E1A9F2C32004A8413 /* PlusScrollViewController.m in Sources */,
+				847A899A1A9F298B004A8413 /* NavigationController.m in Sources */,
+				84C5B7D01A9F22C800EEEB24 /* AppDelegate.m in Sources */,
+				847A899B1A9F298B004A8413 /* TableViewController.m in Sources */,
+				84C5B7CD1A9F22C800EEEB24 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		84C5B7E81A9F22C800EEEB24 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84C5B7E91A9F22C800EEEB24 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		84C5B7EB1A9F22C800EEEB24 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FF64EDB1BA04182CD80346D1 /* Pods-LGPlusButtonsViewDemo.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = LGPlusButtonsViewDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		84C5B7EC1A9F22C800EEEB24 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6CA3D88515E7F3B71D89BE22 /* Pods-LGPlusButtonsViewDemo.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = LGPlusButtonsViewDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		84C5B7C21A9F22C800EEEB24 /* Build configuration list for PBXProject "LGPlusButtonsViewDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C5B7E81A9F22C800EEEB24 /* Debug */,
+				84C5B7E91A9F22C800EEEB24 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84C5B7EA1A9F22C800EEEB24 /* Build configuration list for PBXNativeTarget "LGPlusButtonsViewDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C5B7EB1A9F22C800EEEB24 /* Debug */,
+				84C5B7EC1A9F22C800EEEB24 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 84C5B7BF1A9F22C800EEEB24 /* Project object */;
+}

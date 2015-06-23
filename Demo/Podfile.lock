@@ -1,0 +1,19 @@
+PODS:
+  - LGDrawer (1.0.0)
+  - LGPlusButtonsView (1.0.0)
+
+DEPENDENCIES:
+  - LGDrawer (from `../../LGDrawer`)
+  - LGPlusButtonsView (from `../`)
+
+EXTERNAL SOURCES:
+  LGDrawer:
+    :path: ../../LGDrawer
+  LGPlusButtonsView:
+    :path: ../
+
+SPEC CHECKSUMS:
+  LGDrawer: 7ceea97b27a6b23e8eb691210ca180c897025513
+  LGPlusButtonsView: a3a7d0c47f99dcce30911541f8d2d255244ab645
+
+COCOAPODS: 0.37.2
