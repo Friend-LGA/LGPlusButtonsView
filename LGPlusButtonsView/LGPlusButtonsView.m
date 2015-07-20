@@ -1142,7 +1142,7 @@ LGPlusButtonDescriptionsPosition;
     {
         CGFloat dif = 1.f-buttonWrapperView1.alpha;
         
-        [LGPlusButtonsView animateStandartWithDuration:0.3*dif
+        [LGPlusButtonsView animateStandardWithDuration:0.3*dif
                                                  delay:delay
                                             animations:^(void)
          {
@@ -1439,7 +1439,7 @@ LGPlusButtonDescriptionsPosition;
 
 #pragma mark - Support
 
-+ (void)animateStandartWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay animations:(void(^)())animations completion:(void(^)(BOOL finished))completion
++ (void)animateStandardWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay animations:(void(^)())animations completion:(void(^)(BOOL finished))completion
 {
     if ([UIDevice currentDevice].systemVersion.floatValue >= 7.0)
     {
