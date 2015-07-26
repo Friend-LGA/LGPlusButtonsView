@@ -877,18 +877,10 @@ LGPlusButtonDescriptionsPosition;
 
 - (void)plusButtonAction:(LGPlusButton *)button
 {
-    _plusButton.selected = !_plusButton.isSelected;
-    
     if (_plusButton.isSelected)
-    {
-        [self selectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
-        [self showButtonsAnimated:YES completionHandler:nil];
-    }
-    else
-    {
-        [self deselectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
         [self hideButtonsAnimated:YES completionHandler:nil];
-    }
+    else
+        [self showButtonsAnimated:YES completionHandler:nil];
     
     if (_plusButtonActionHandler) _plusButtonActionHandler(self);
     
@@ -1026,6 +1018,10 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowsPlusButton)
     {
+        _plusButton.selected = YES;
+        
+        [self selectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
+        
         NSTimeInterval delay = 0.03;
         
         for (NSInteger i=1; i<_buttons.count; i++)
@@ -1067,6 +1063,10 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowsPlusButton)
     {
+        _plusButton.selected = NO;
+        
+        [self deselectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
+        
         NSTimeInterval delay = 0.03;
         
         for (NSInteger i=1; i<_buttons.count; i++)
@@ -1299,7 +1299,8 @@ LGPlusButtonDescriptionsPosition;
             [UIView transitionWithView:plusButtonWrapperView2
                               duration:0.2
                                options:UIViewAnimationOptionTransitionCrossDissolve
-                            animations:nil completion:completionHandler];
+                            animations:nil
+                            completion:completionHandler];
     }
     else if (type == LGPlusButtonAnimationTypeRotate)
     {
@@ -1335,7 +1336,8 @@ LGPlusButtonDescriptionsPosition;
             [UIView transitionWithView:plusButtonWrapperView2
                               duration:0.2
                                options:UIViewAnimationOptionTransitionCrossDissolve
-                            animations:nil completion:completionHandler];
+                            animations:nil
+                            completion:completionHandler];
     }
     else if (type == LGPlusButtonAnimationTypeRotate)
     {
