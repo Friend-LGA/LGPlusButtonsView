@@ -588,6 +588,16 @@ LGPlusButtonDescriptionsPosition;
     }
 }
 
+- (void)setOffset:(CGPoint)offset
+{
+    if (!CGPointEqualToPoint(_offset, offset))
+    {
+        _offset = offset;
+        
+        [self layoutInvalidate];
+    }
+}
+
 #pragma mark -
 
 - (void)layoutInvalidate
@@ -677,6 +687,8 @@ LGPlusButtonDescriptionsPosition;
             selfOrigin = CGPointMake(parentInset.left+parentOffset.x,
                                      parentInset.top+parentOffset.y);
         }
+        selfOrigin.x += _offset.x;
+        selfOrigin.y += _offset.y;
         
         CGRect selfFrame = CGRectMake(selfOrigin.x, selfOrigin.y, selfSize.width, selfSize.height);
         if ([UIScreen mainScreen].scale == 1.f) selfFrame = CGRectIntegral(selfFrame);

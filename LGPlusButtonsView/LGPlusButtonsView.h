@@ -86,6 +86,7 @@ LGPlusButtonAnimationType;
 @property (assign, nonatomic) CGSize       plusButtonSize;
 /** Description horizontal offset from button, default is 6.f */
 @property (assign, nonatomic) CGFloat      descriptionOffsetX;
+@property (assign, nonatomic) CGPoint      offset;
 
 @property (assign, nonatomic) LGPlusButtonsAppearingAnimationType appearingAnimationType;
 @property (assign, nonatomic) LGPlusButtonsAppearingAnimationType buttonsAppearingAnimationType;
