@@ -383,16 +383,45 @@ LGPlusButtonDescriptionsPosition;
     if (isChanged) [self layoutInvalidate];
 }
 
+- (void)setButtonsImages:(NSArray *)images forState:(UIControlState)state
+{
+  BOOL isChanged = NO;
+  int index=0;
+  for (LGPlusButton *button in _buttons)
+  {
+    if (!CGSizeEqualToSize(button.imageView.image.size, [images[index] size]))
+      isChanged = YES;
+    
+    [button setImage:images[index++] forState:state];
+  }
+  
+  if (isChanged) [self layoutInvalidate];
+}
+
 - (void)setButtonsBackgroundImage:(UIImage *)backgroundImage forState:(UIControlState)state
 {
     for (LGPlusButton *button in _buttons)
         [button setBackgroundImage:backgroundImage forState:state];
 }
 
+- (void)setButtonsBackgroundImages:(NSArray *)backgroundImages forState:(UIControlState)state
+{
+  int index=0;
+  for (LGPlusButton *button in _buttons)
+    [button setBackgroundImage:backgroundImages[index++] forState:state];
+}
+
 - (void)setButtonsBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state
 {
     for (LGPlusButton *button in _buttons)
         [button setBackgroundColor:backgroundColor forState:state];
+}
+
+- (void)setButtonsBackgroundColors:(NSArray *)backgroundColors forState:(UIControlState)state
+{
+  int index=0;
+  for (LGPlusButton *button in _buttons)
+    [button setBackgroundColor:backgroundColors[index++] forState:state];
 }
 
 - (void)setButtonsTitleFont:(UIFont *)font
