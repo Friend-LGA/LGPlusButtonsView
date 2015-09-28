@@ -141,8 +141,11 @@ LGPlusButtonAnimationType;
 - (void)setButtonsTitles:(NSArray *)titles forState:(UIControlState)state;
 - (void)setButtonsTitleColor:(UIColor *)titleColor forState:(UIControlState)state;
 - (void)setButtonsImage:(UIImage *)image forState:(UIControlState)state;
+- (void)setButtonsImages:(NSArray *)images forState:(UIControlState)state;
 - (void)setButtonsBackgroundImage:(UIImage *)backgroundImage forState:(UIControlState)state;
+- (void)setButtonsBackgroundImages:(NSArray *)backgroundImages forState:(UIControlState)state;
 - (void)setButtonsBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state;
+- (void)setButtonsBackgroundColors:(NSArray *)backgroundColors forState:(UIControlState)state;
 - (void)setButtonsTitleFont:(UIFont *)font;
 
 #pragma mark -
