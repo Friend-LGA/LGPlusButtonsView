@@ -148,6 +148,7 @@
 				84C5B7C41A9F22C800EEEB24 /* Frameworks */,
 				84C5B7C51A9F22C800EEEB24 /* Resources */,
 				92F9790D16709FEEE544F8D3 /* Copy Pods Resources */,
+				F9E826B8E08EA21BF3C0A16C /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -164,7 +165,7 @@
 		84C5B7BF1A9F22C800EEEB24 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Grigory Lutkov";
 				TargetAttributes = {
 					84C5B7C61A9F22C800EEEB24 = {
@@ -232,6 +233,21 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		F9E826B8E08EA21BF3C0A16C /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-LGPlusButtonsViewDemo/Pods-LGPlusButtonsViewDemo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -271,6 +287,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -340,6 +357,7 @@
 				INFOPLIST_FILE = LGPlusButtonsViewDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.test.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -355,6 +373,7 @@
 				INFOPLIST_FILE = LGPlusButtonsViewDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.test.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

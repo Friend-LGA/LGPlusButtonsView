@@ -383,16 +383,56 @@ LGPlusButtonDescriptionsPosition;
     if (isChanged) [self layoutInvalidate];
 }
 
+- (void)setButtonsImages:(NSArray *)images forState:(UIControlState)state
+{
+    BOOL isChanged = NO;
+
+    for (NSUInteger i=0; i<_buttons.count; i++)
+    {
+        LGPlusButton *button = _buttons[i];
+        UIImage *image = images[i];
+
+        if (!CGSizeEqualToSize(button.imageView.image.size, image.size))
+            isChanged = YES;
+
+        [button setImage:image forState:state];
+    }
+
+    if (isChanged) [self layoutInvalidate];
+}
+
 - (void)setButtonsBackgroundImage:(UIImage *)backgroundImage forState:(UIControlState)state
 {
     for (LGPlusButton *button in _buttons)
         [button setBackgroundImage:backgroundImage forState:state];
 }
 
+- (void)setButtonsBackgroundImages:(NSArray *)backgroundImages forState:(UIControlState)state
+{
+    for (NSUInteger i=0; i<_buttons.count; i++)
+    {
+        LGPlusButton *button = _buttons[i];
+        UIImage *backgroundImage = backgroundImages[i];
+
+        [button setBackgroundImage:backgroundImage forState:state];
+    }
+}
+
 - (void)setButtonsBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state
 {
     for (LGPlusButton *button in _buttons)
         [button setBackgroundColor:backgroundColor forState:state];
+}
+
+- (void)setButtonsBackgroundColors:(NSArray *)backgroundColors forState:(UIControlState)state
+{
+    for (NSUInteger i=0; i<_buttons.count; i++)
+    {
+        LGPlusButton *button = _buttons[i];
+        UIColor *backgroundColor = backgroundColors[i];
+
+        [button setBackgroundColor:backgroundColor forState:state];
+    }
 }
 
 - (void)setButtonsTitleFont:(UIFont *)font
@@ -878,6 +918,8 @@ LGPlusButtonDescriptionsPosition;
             selfOrigin = CGPointMake(parentInset.left+parentOffset.x,
                                      parentInset.top+parentOffset.y);
         }
+        selfOrigin.x += _offset.x;
+        selfOrigin.y += _offset.y;
         
         CGRect selfFrame = CGRectMake(selfOrigin.x, selfOrigin.y, self.frame.size.width, self.frame.size.height);
         if ([UIScreen mainScreen].scale == 1.f) selfFrame = CGRectIntegral(selfFrame);
