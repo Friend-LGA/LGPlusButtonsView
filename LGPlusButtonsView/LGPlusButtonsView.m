@@ -921,6 +921,7 @@ LGPlusButtonDescriptionsPosition;
         selfOrigin.x += _offset.x;
         selfOrigin.y += _offset.y;
         
+        selfOrigin = CGPointMake(selfOrigin.x + _offset.x, selfOrigin.y + _offset.y);
         CGRect selfFrame = CGRectMake(selfOrigin.x, selfOrigin.y, self.frame.size.width, self.frame.size.height);
         if ([UIScreen mainScreen].scale == 1.f) selfFrame = CGRectIntegral(selfFrame);
         self.center = CGPointMake(selfFrame.origin.x+selfFrame.size.width/2, selfFrame.origin.y+selfFrame.size.height/2);
