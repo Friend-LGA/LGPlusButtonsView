@@ -1,6 +1,6 @@
 # LGPlusButtonsView
 
-iOS implementation of Google 'plus button', that shows more options.
+iOS implementation of Floating Action Button (Google Plus Button, fab), that shows more options.
 
 ## Preview
 
