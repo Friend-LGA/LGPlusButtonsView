@@ -7,18 +7,21 @@
 //
 
 #import "AppDelegate.h"
+#import "NavigationController.h"
+#import "TableViewController.h"
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.navigationController = [NavigationController new];
-    
+    TableViewController *tableViewController = [TableViewController new];
+    NavigationController *navigationController = [[NavigationController alloc] initWithRootViewController:tableViewController];
+
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.rootViewController = self.navigationController;
+    self.window.rootViewController = navigationController;
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
-    
+
     return YES;
 }
 

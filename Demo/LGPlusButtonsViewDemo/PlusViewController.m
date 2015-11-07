@@ -25,20 +25,20 @@
     if (self)
     {
         self.title = title;
-        
+
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(showHideButtonsAction)];
-        
+
         // -----
-        
+
         _contentView = [UIView new];
         _contentView.backgroundColor = [UIColor whiteColor];
         [self.view addSubview:_contentView];
-        
+
         _textLabel = [UILabel new];
         _textLabel.backgroundColor = [UIColor clearColor];
         _textLabel.text = @"UIView";
         [_contentView addSubview:_textLabel];
-        
+
         _plusButtonsView = [[LGPlusButtonsView alloc] initWithView:_contentView
                                                    numberOfButtons:3
                                                    showsPlusButton:NO
@@ -47,11 +47,10 @@
                                 NSLog(@"%@, %@, %i", title, description, (int)index);
                             }
                                            plusButtonActionHandler:nil];
-        
+
         [_plusButtonsView setButtonsTitles:@[@"1", @"2", @"3"] forState:UIControlStateNormal];
         [_plusButtonsView setDescriptionsTexts:@[@"Button One description", @"Button Two description", @"Button Three description"]];
         _plusButtonsView.position = LGPlusButtonsViewPositionTopRight;
-        _plusButtonsView.showWhenScrolling = NO;
         _plusButtonsView.appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop;
         [_plusButtonsView setButtonsTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_plusButtonsView setButtonsAdjustsImageWhenHighlighted:NO];
@@ -79,7 +78,7 @@
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
-    
+
     CGFloat topInset = 0.f;
     if ([UIDevice currentDevice].systemVersion.floatValue >= 7.0)
     {
@@ -87,27 +86,27 @@
         topInset += ([UIApplication sharedApplication].statusBarHidden ? 0.f : MIN([UIApplication sharedApplication].statusBarFrame.size.width, [UIApplication sharedApplication].statusBarFrame.size.height));
     }
     _contentView.frame = CGRectMake(0.f, topInset, self.view.frame.size.width, self.view.frame.size.height-topInset);
-    
+
     [_textLabel sizeToFit];
     _textLabel.center = CGPointMake(_contentView.frame.size.width/2, _contentView.frame.size.height-20.f-_textLabel.frame.size.height/2);
     _textLabel.frame = CGRectIntegral(_textLabel.frame);
-    
+
     // -----
-    
+
     BOOL isPortrait = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation);
-    
+
     CGFloat buttonSide = (isPortrait ? 64.f : 44.f);
     CGFloat inset = (isPortrait ? 3.f : 2.f);
     CGFloat buttonsFontSize = (isPortrait ? 30.f : 20.f);
     CGFloat plusButtonFontSize = buttonsFontSize*1.5;
-    
+
     _plusButtonsView.buttonInset = UIEdgeInsetsMake(inset, inset, inset, inset);
     _plusButtonsView.contentInset = UIEdgeInsetsMake(inset, inset, inset, inset);
     [_plusButtonsView setButtonsTitleFont:[UIFont boldSystemFontOfSize:buttonsFontSize]];
-    
+
     _plusButtonsView.plusButton.titleLabel.font = [UIFont systemFontOfSize:plusButtonFontSize];
     _plusButtonsView.plusButton.titleOffset = CGPointMake(0.f, -plusButtonFontSize*0.1);
-    
+
     _plusButtonsView.buttonsSize = CGSizeMake(buttonSide, buttonSide);
     [_plusButtonsView setButtonsLayerCornerRadius:buttonSide/2];
     [_plusButtonsView setButtonsLayerBorderColor:[UIColor colorWithRed:0.f green:0.f blue:0.f alpha:0.1] borderWidth:1.f];

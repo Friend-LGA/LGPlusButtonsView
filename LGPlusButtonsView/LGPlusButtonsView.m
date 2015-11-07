@@ -108,11 +108,11 @@ LGPlusButtonDescriptionsPosition;
     if (self)
     {
         _parentView = view;
-        _showWhenScrolling = YES;
         _appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical;
         _buttonsAppearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideHorizontal;
         _showsPlusButton = showsPlusButton;
         _descriptionOffsetX = 6.f;
+        _scrollSensitivity = 64.f;
         
         // -----
         
@@ -334,7 +334,7 @@ LGPlusButtonDescriptionsPosition;
 - (void)willMoveToSuperview:(UIView *)newSuperview
 {
     [super willMoveToSuperview:newSuperview];
-    
+
     if (!newSuperview)
         [self removeObservers];
     else
@@ -342,6 +342,14 @@ LGPlusButtonDescriptionsPosition;
 }
 
 #pragma mark - Setters and Getters
+
+- (void)setAlwaysVisible:(BOOL)alwaysVisible
+{
+    _alwaysVisible = alwaysVisible;
+
+    if (alwaysVisible)
+        [self showAnimated:NO completionHandler:nil];
+}
 
 - (void)setButtonsTitles:(NSArray *)titles forState:(UIControlState)state
 {
@@ -1035,7 +1043,7 @@ LGPlusButtonDescriptionsPosition;
                          if (result && index == _buttons.count-1)
                              self.hidden = YES;
                          
-                         if (completionHandler) completionHandler();
+                         if (completionHandler && result) completionHandler();
                      }];
                 }
             }
@@ -1059,7 +1067,7 @@ LGPlusButtonDescriptionsPosition;
                      if (result && index == _buttons.count-1)
                          self.hidden = YES;
                      
-                     if (completionHandler) completionHandler();
+                     if (completionHandler && result) completionHandler();
                  }];
             }
         }
@@ -1094,7 +1102,7 @@ LGPlusButtonDescriptionsPosition;
                                    animated:animated
                           completionHandler:^(BOOL result)
                      {
-                         if (completionHandler) completionHandler();
+                         if (completionHandler && result) completionHandler();
                      }];
                 }
                 else
@@ -1105,7 +1113,7 @@ LGPlusButtonDescriptionsPosition;
                                    animated:animated
                           completionHandler:^(BOOL result)
                      {
-                         if (completionHandler) completionHandler();
+                         if (completionHandler && result) completionHandler();
                      }];
                 }
             }
@@ -1137,7 +1145,7 @@ LGPlusButtonDescriptionsPosition;
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (completionHandler) completionHandler();
+                     if (completionHandler && result) completionHandler();
                  }];
             }
         }
@@ -1456,7 +1464,7 @@ LGPlusButtonDescriptionsPosition;
     {
         [self updatePosition];
         
-        if (self.isShowWhenScrolling)
+        if (!self.isAlwaysVisible)
         {
             UIScrollView *scrollView = (UIScrollView *)_parentView;
             
@@ -1472,15 +1480,18 @@ LGPlusButtonDescriptionsPosition;
             }
             else
             {
-                CGFloat minDiff = 64.f;
                 CGFloat diff = self.offsetY - offsetY;
                 
-                if (scrollView.isTracking && scrollView.isDragging && (diff > minDiff || diff < -minDiff))
+                if (scrollView.isTracking && scrollView.isDragging && (diff > _scrollSensitivity || diff < -_scrollSensitivity))
                 {
                     if (self.offsetY > offsetY)
                         [self showAnimated:YES completionHandler:nil];
                     else
-                        [self hideAnimated:YES completionHandler:nil];
+                        [self hideAnimated:YES completionHandler:^(void)
+                         {
+                             if (self.isHideButtonsOnScroll)
+                                 [self hideButtonsAnimated:NO completionHandler:nil];
+                         }];
                 }
             }
             
@@ -1489,8 +1500,7 @@ LGPlusButtonDescriptionsPosition;
                 self.tempOffsetY = offsetY;
         }
     }
-    else
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    else [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 #pragma mark - Support

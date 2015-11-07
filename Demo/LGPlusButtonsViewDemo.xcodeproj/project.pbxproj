@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1946D2D8D0CE8124E0632DEA /* libPods-LGPlusButtonsViewDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 23A4E5C49FE8BEAB57D05B49 /* libPods-LGPlusButtonsViewDemo.a */; };
+		4A1F8E611BEE098100D0B57E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A1F8E601BEE098100D0B57E /* LaunchScreen.storyboard */; };
 		4A3F4B5A1AA8BA51006D9DAA /* PlusViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */; };
 		847A899A1A9F298B004A8413 /* NavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A89971A9F298B004A8413 /* NavigationController.m */; };
 		847A899B1A9F298B004A8413 /* TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A89991A9F298B004A8413 /* TableViewController.m */; };
@@ -19,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		23A4E5C49FE8BEAB57D05B49 /* libPods-LGPlusButtonsViewDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LGPlusButtonsViewDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A1F8E601BEE098100D0B57E /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4A3F4B581AA8BA51006D9DAA /* PlusViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlusViewController.h; sourceTree = "<group>"; };
 		4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlusViewController.m; sourceTree = "<group>"; };
 		6CA3D88515E7F3B71D89BE22 /* Pods-LGPlusButtonsViewDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LGPlusButtonsViewDemo.release.xcconfig"; path = "Pods/Target Support Files/Pods-LGPlusButtonsViewDemo/Pods-LGPlusButtonsViewDemo.release.xcconfig"; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				4A3F4B5C1AA8BDAD006D9DAA /* Demo View Controllers */,
 				84C5B7D71A9F22C800EEEB24 /* Images.xcassets */,
 				84C5B7CA1A9F22C800EEEB24 /* Supporting Files */,
+				4A1F8E601BEE098100D0B57E /* LaunchScreen.storyboard */,
 			);
 			path = LGPlusButtonsViewDemo;
 			sourceTree = "<group>";
@@ -197,6 +200,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				84C5B7D81A9F22C800EEEB24 /* Images.xcassets in Resources */,
+				4A1F8E611BEE098100D0B57E /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

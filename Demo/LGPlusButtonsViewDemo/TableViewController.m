@@ -24,11 +24,13 @@
     if (self)
     {
         self.title = @"LGPlusButtonsView";
-        
+
         _titlesArray = @[@"UIView + Variant 1",
                          @"UIScrollView + Variant 2"];
-                
+
         [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
+
+        self.clearsSelectionOnViewWillAppear = YES;
     }
     return self;
 }
@@ -50,10 +52,10 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
-    
+
     cell.textLabel.font = [UIFont systemFontOfSize:16.f];
     cell.textLabel.text = _titlesArray[indexPath.row];
-    
+
     return cell;
 }
 

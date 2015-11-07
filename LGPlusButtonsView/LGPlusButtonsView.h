@@ -70,8 +70,8 @@ typedef enum
 }
 LGPlusButtonAnimationType;
 
-@property (assign, nonatomic, getter=isShowing)           BOOL showing;
-@property (assign, nonatomic, getter=isShowWhenScrolling) BOOL showWhenScrolling;
+@property (assign, nonatomic, readonly, getter=isShowing) BOOL showing;
+@property (assign, nonatomic, getter=isAlwaysVisible) BOOL alwaysVisible;
 
 @property (strong, nonatomic) LGPlusButton *plusButton;
 
@@ -92,6 +92,12 @@ LGPlusButtonAnimationType;
 @property (assign, nonatomic) LGPlusButtonsAppearingAnimationType buttonsAppearingAnimationType;
 @property (assign, nonatomic) LGPlusButtonAnimationType           plusButtonAnimationType;
 @property (assign, nonatomic) LGPlusButtonsViewPosition           position;
+
+/** How much scroll you need to show/hide buttons. Default is 64.f */
+@property (assign, nonatomic) CGFloat scrollSensitivity;
+
+/** Hide additional buttons on scroll. Default is NO */
+@property (assign, nonatomic, getter=isHideButtonsOnScroll) BOOL hideButtonsOnScroll;
 
 /** Do not forget about weak referens to self */
 @property (strong, nonatomic) void (^actionHandler)(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index);

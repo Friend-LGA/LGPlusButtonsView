@@ -7,30 +7,36 @@
 //
 
 #import "NavigationController.h"
-#import "TableViewController.h"
 
 @interface NavigationController ()
-
-@property (strong, nonatomic) TableViewController *tableViewController;
 
 @end
 
 @implementation NavigationController
 
-- (id)init
+- (void)viewDidLoad
 {
-    self = [super init];
-    if (self)
-    {
-        self.tableViewController = [TableViewController new];
-        [self setViewControllers:@[self.tableViewController]];
-    }
-    return self;
+    [super viewDidLoad];
+
+    self.navigationBar.translucent = YES;
+    self.navigationBar.barTintColor = [UIColor colorWithRed:0.f green:0.5 blue:1.f alpha:1.f];
+    self.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName: [UIColor whiteColor]};
+    self.navigationBar.tintColor = [UIColor colorWithWhite:1.f alpha:0.75];
 }
 
 - (BOOL)shouldAutorotate
 {
-    return self.topViewController.shouldAutorotate;
+    return YES;
+}
+
+- (BOOL)prefersStatusBarHidden
+{
+    return UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return UIStatusBarStyleLightContent;
 }
 
 @end
