@@ -43,32 +43,29 @@
 
 @interface LGPlusButtonsView : UIView
 
-typedef enum
+typedef NS_ENUM(NSUInteger, LGPlusButtonsViewPosition)
 {
     LGPlusButtonsViewPositionBottomRight = 0,
     LGPlusButtonsViewPositionBottomLeft  = 1,
     LGPlusButtonsViewPositionTopRight    = 2,
     LGPlusButtonsViewPositionTopLeft     = 3
-}
-LGPlusButtonsViewPosition;
+};
 
-typedef enum
+typedef NS_ENUM(NSUInteger, LGPlusButtonsAppearingAnimationType)
 {
     LGPlusButtonsAppearingAnimationTypeNone                            = 0,
     LGPlusButtonsAppearingAnimationTypeCrossDissolve                   = 1,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideHorizontal = 2,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical   = 3,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop             = 4
-}
-LGPlusButtonsAppearingAnimationType;
+};
 
-typedef enum
+typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 {
     LGPlusButtonAnimationTypeNone          = 0,
     LGPlusButtonAnimationTypeRotate        = 1,
     LGPlusButtonAnimationTypeCrossDissolve = 2
-}
-LGPlusButtonAnimationType;
+};
 
 @property (assign, nonatomic, readonly, getter=isShowing) BOOL showing;
 @property (assign, nonatomic, getter=isAlwaysVisible) BOOL alwaysVisible;
