@@ -54,6 +54,9 @@
         _plusButtonsView.appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop;
         [_plusButtonsView setButtonsTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_plusButtonsView setButtonsAdjustsImageWhenHighlighted:NO];
+        [_plusButtonsView setButtonsImage:[UIImage imageNamed:@"Circle_Normal"] forState:UIControlStateNormal];
+        [_plusButtonsView setButtonsImage:[UIImage imageNamed:@"Circle_Highlighted"] forState:UIControlStateHighlighted];
+        [_plusButtonsView setButtonsLayerShadowColor:[UIColor blackColor] shadowOpacity:0.5 shadowOffset:CGSizeZero shadowRadius:2.f];
     }
     return self;
 }
@@ -108,12 +111,6 @@
     _plusButtonsView.plusButton.titleOffset = CGPointMake(0.f, -plusButtonFontSize*0.1);
 
     _plusButtonsView.buttonsSize = CGSizeMake(buttonSide, buttonSide);
-    [_plusButtonsView setButtonsLayerCornerRadius:buttonSide/2];
-    [_plusButtonsView setButtonsLayerBorderColor:[UIColor colorWithRed:0.f green:0.f blue:0.f alpha:0.1] borderWidth:1.f];
-    [_plusButtonsView setButtonsLayerMasksToBounds:YES];
-    [_plusButtonsView setButtonsBackgroundColor:[UIColor colorWithRed:0.f green:0.5 blue:1.f alpha:1.f] forState:UIControlStateNormal];
-    [_plusButtonsView setButtonsBackgroundColor:[UIColor colorWithRed:0.2 green:0.7 blue:1.f alpha:1.f] forState:UIControlStateHighlighted];
-    [_plusButtonsView setButtonsBackgroundColor:[UIColor colorWithRed:0.2 green:0.7 blue:1.f alpha:1.f] forState:UIControlStateHighlighted|UIControlStateSelected];
 }
 
 @end

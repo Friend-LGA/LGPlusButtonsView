@@ -150,6 +150,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 - (void)setButtonsBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state;
 - (void)setButtonsBackgroundColors:(NSArray *)backgroundColors forState:(UIControlState)state;
 - (void)setButtonsTitleFont:(UIFont *)font;
+- (void)setButtonsImageViewContentMode:(UIViewContentMode)contentMode;
 
 #pragma mark -
 
@@ -166,6 +167,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 
 #pragma mark -
 
+- (void)setButtonsLayerShouldRasterize:(BOOL)shouldRasterize;
 - (void)setButtonsLayerMasksToBounds:(BOOL)masksToBounds;
 - (void)setButtonsLayerCornerRadius:(CGFloat)cornerRadius;
 - (void)setButtonsLayerBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth;

@@ -17,13 +17,21 @@ iOS implementation of Floating Action Button (Google Plus Button, fab), that sho
 
 ### With CocoaPods
 
-[CocoaPods](http://cocoapods.org/) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries in your projects. See the "Get Started" section for more details.
+CocoaPods is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries in your projects. To install with cocoaPods, follow the "Get Started" section on [CocoaPods](https://cocoapods.org/).
 
 #### Podfile
-
-```
+```ruby
 platform :ios, '6.0'
-pod 'LGPlusButtonsView', '~> 1.0.0'
+pod 'LGPlusButtonsView', '~> 1.0'
+```
+
+### With Carthage
+
+Carthage is a lightweight dependency manager for Swift and Objective-C. It leverages CocoaTouch modules and is less invasive than CocoaPods. To install with carthage, follow the instruction on [Carthage](https://github.com/Carthage/Carthage/).
+
+#### Cartfile
+```
+github "Friend-LGA/LGPlusButtonsView" ~> 1.0
 ```
 
 ## Usage

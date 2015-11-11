@@ -8,7 +8,6 @@
 
 #import "PlusScrollViewController.h"
 #import "LGPlusButtonsView.h"
-#import "LGDrawer.h"
 
 @interface PlusScrollViewController ()
 
@@ -56,6 +55,9 @@
         _plusButtonsView.plusButtonAnimationType = LGPlusButtonAnimationTypeRotate;
         [_plusButtonsView setButtonsTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_plusButtonsView setButtonsAdjustsImageWhenHighlighted:NO];
+        [_plusButtonsView setButtonsImage:[UIImage imageNamed:@"Circle_Normal"] forState:UIControlStateNormal];
+        [_plusButtonsView setButtonsImage:[UIImage imageNamed:@"Circle_Highlighted"] forState:UIControlStateHighlighted];
+        [_plusButtonsView setButtonsLayerShadowColor:[UIColor blackColor] shadowOpacity:0.5 shadowOffset:CGSizeZero shadowRadius:2.f];
         //_plusButtonsView.alwaysVisible = YES;
         //_plusButtonsView.hideButtonsOnScroll = YES;
         //_plusButtonsView.scrollSensitivity = 0.f;
@@ -90,48 +92,19 @@
 
     BOOL isPortrait = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation);
 
-    CGFloat shadowBlur = 3.f;
     CGFloat buttonSide = (isPortrait ? 64.f : 44.f);
+    CGFloat inset = (isPortrait ? 3.f : 2.f);
     CGFloat buttonsFontSize = (isPortrait ? 30.f : 20.f);
     CGFloat plusButtonFontSize = buttonsFontSize*1.5;
 
-    _plusButtonsView.contentInset = UIEdgeInsetsMake(shadowBlur, shadowBlur, shadowBlur, shadowBlur);
+    _plusButtonsView.buttonInset = UIEdgeInsetsMake(inset, inset, inset, inset);
+    _plusButtonsView.contentInset = UIEdgeInsetsMake(inset, inset, inset, inset);
     [_plusButtonsView setButtonsTitleFont:[UIFont boldSystemFontOfSize:buttonsFontSize]];
 
     _plusButtonsView.plusButton.titleLabel.font = [UIFont systemFontOfSize:plusButtonFontSize];
     _plusButtonsView.plusButton.titleOffset = CGPointMake(0.f, -plusButtonFontSize*0.1);
 
-    UIImage *circleImageNormal = [LGDrawer drawEllipseWithImageSize:CGSizeMake(buttonSide, buttonSide)
-                                                               size:CGSizeMake(buttonSide-shadowBlur*2, buttonSide-shadowBlur*2)
-                                                             offset:CGPointZero
-                                                             rotate:0.f
-                                                    backgroundColor:nil
-                                                          fillColor:[UIColor colorWithRed:0.f green:0.5 blue:1.f alpha:1.f]
-                                                        strokeColor:nil
-                                                    strokeThickness:0.f
-                                                         strokeDash:nil
-                                                         strokeType:LGDrawerStrokeTypeInside
-                                                        shadowColor:[UIColor colorWithWhite:0.f alpha:0.5]
-                                                       shadowOffset:CGPointZero
-                                                         shadowBlur:shadowBlur];
-
-    UIImage *circleImageHighlighted = [LGDrawer drawEllipseWithImageSize:CGSizeMake(buttonSide, buttonSide)
-                                                                    size:CGSizeMake(buttonSide-shadowBlur*2, buttonSide-shadowBlur*2)
-                                                                  offset:CGPointZero
-                                                                  rotate:0.f
-                                                         backgroundColor:nil
-                                                               fillColor:[UIColor colorWithRed:0.2 green:0.7 blue:1.f alpha:1.f]
-                                                             strokeColor:nil
-                                                         strokeThickness:0.f
-                                                              strokeDash:nil
-                                                              strokeType:LGDrawerStrokeTypeInside
-                                                             shadowColor:[UIColor colorWithWhite:0.f alpha:0.5]
-                                                            shadowOffset:CGPointZero
-                                                              shadowBlur:shadowBlur];
-
-    [_plusButtonsView setButtonsImage:circleImageNormal forState:UIControlStateNormal];
-    [_plusButtonsView setButtonsImage:circleImageHighlighted forState:UIControlStateHighlighted];
-    [_plusButtonsView setButtonsImage:circleImageHighlighted forState:UIControlStateHighlighted|UIControlStateSelected];
+    _plusButtonsView.buttonsSize = CGSizeMake(buttonSide, buttonSide);
 }
 
 @end

@@ -25,8 +25,8 @@
     {
         self.title = @"LGPlusButtonsView";
 
-        _titlesArray = @[@"UIView + Variant 1",
-                         @"UIScrollView + Variant 2"];
+        _titlesArray = @[@"UIView",
+                         @"UIScrollView"];
 
         [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
 

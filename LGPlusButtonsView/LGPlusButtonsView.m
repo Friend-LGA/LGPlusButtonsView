@@ -458,6 +458,12 @@ LGPlusButtonDescriptionsPosition;
     if (isChanged) [self layoutInvalidate];
 }
 
+- (void)setButtonsImageViewContentMode:(UIViewContentMode)contentMode
+{
+    for (LGPlusButton *button in _buttons)
+        button.imageView.contentMode = contentMode;
+}
+
 #pragma mark -
 
 - (void)setDescriptionsTexts:(NSArray *)texts
@@ -546,6 +552,12 @@ LGPlusButtonDescriptionsPosition;
 }
 
 #pragma mark -
+
+- (void)setButtonsLayerShouldRasterize:(BOOL)shouldRasterize
+{
+    for (LGPlusButton *button in _buttons)
+        button.layer.shouldRasterize = shouldRasterize;
+}
 
 - (void)setButtonsLayerMasksToBounds:(BOOL)masksToBounds
 {

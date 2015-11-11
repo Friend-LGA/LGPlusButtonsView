@@ -82,6 +82,14 @@
     if (self.imageView.image)
     {
         CGSize imageViewSize = [self.imageView sizeThatFits:sizeToFit];
+        if (imageViewSize.width > sizeToFit.width || imageViewSize.height > sizeToFit.height)
+        {
+            CGFloat aspect = imageViewSize.width/imageViewSize.height;
+
+            imageViewSize.width = (imageViewSize.width > imageViewSize.height ? sizeToFit.width : sizeToFit.height);
+            imageViewSize.height = imageViewSize.width/aspect;
+
+        }
         CGRect imageViewFrame = CGRectMake(selfFrame.size.width/2-imageViewSize.width/2+_imageOffset.x,
                                            selfFrame.size.height/2-imageViewSize.height/2+_imageOffset.y,
                                            imageViewSize.width,
