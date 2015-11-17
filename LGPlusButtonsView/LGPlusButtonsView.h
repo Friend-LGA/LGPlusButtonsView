@@ -38,7 +38,7 @@
 
 - (void)plusButtonsView:(LGPlusButtonsView *)plusButtonsView buttonPressedWithTitle:(NSString *)title description:(NSString *)description index:(NSUInteger)index;
 - (void)plusButtonsViewPlusButtonPressed:(LGPlusButtonsView *)plusButtonsView;
-
+- (BOOL)plusButtonsViewShouldHide:(LGPlusButtonsView *)plusButtonsView;
 @end
 
 @interface LGPlusButtonsView : UIView
