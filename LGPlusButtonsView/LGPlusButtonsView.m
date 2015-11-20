@@ -1096,10 +1096,6 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowsPlusButton)
     {
-		if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewShouldHide:)]) {
-			if (![_delegate plusButtonsViewShouldHide:self])
-				return;
-		}
         _plusButton.selected = YES;
         
         [self selectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
@@ -1145,10 +1141,6 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowsPlusButton)
     {
-		if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewShouldHide:)]) {
-			if (![_delegate plusButtonsViewShouldHide:self])
-				return;
-		}
         _plusButton.selected = NO;
         
         [self deselectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
