@@ -341,6 +341,15 @@ LGPlusButtonDescriptionsPosition;
         [self addObservers];
 }
 
+-(id)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+	id hitView = [super hitTest:point withEvent:event];
+	if (hitView == self) {
+		return nil;
+	} else {
+		return hitView;
+	}
+}
+
 #pragma mark - Setters and Getters
 
 - (void)setAlwaysVisible:(BOOL)alwaysVisible
@@ -1096,10 +1105,6 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowsPlusButton)
     {
-		if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewShouldHide:)]) {
-			if (![_delegate plusButtonsViewShouldHide:self])
-				return;
-		}
         _plusButton.selected = YES;
         
         [self selectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
@@ -1145,10 +1150,6 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowsPlusButton)
     {
-		if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewShouldHide:)]) {
-			if (![_delegate plusButtonsViewShouldHide:self])
-				return;
-		}
         _plusButton.selected = NO;
         
         [self deselectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
