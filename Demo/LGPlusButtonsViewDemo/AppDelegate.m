@@ -8,14 +8,14 @@
 
 #import "AppDelegate.h"
 #import "NavigationController.h"
-#import "TableViewController.h"
+#import "PlusScrollViewController.h"
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    TableViewController *tableViewController = [TableViewController new];
-    NavigationController *navigationController = [[NavigationController alloc] initWithRootViewController:tableViewController];
+    PlusScrollViewController *viewController = [PlusScrollViewController new];
+    NavigationController *navigationController = [[NavigationController alloc] initWithRootViewController:viewController];
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.rootViewController = navigationController;

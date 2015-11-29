@@ -7,14 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4AA8A3041C0B5D3F005EAE92 /* LGPlusButtonDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AA8A3001C0B5D3F005EAE92 /* LGPlusButtonDescription.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		4AA8A3051C0B5D40005EAE92 /* LGPlusButtonDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AA8A3011C0B5D3F005EAE92 /* LGPlusButtonDescription.m */; };
+		4AA8A3061C0B5D40005EAE92 /* LGPlusButtonsViewShared.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AA8A3021C0B5D3F005EAE92 /* LGPlusButtonsViewShared.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		4AA8A3071C0B5D40005EAE92 /* LGPlusButtonsViewShared.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AA8A3031C0B5D3F005EAE92 /* LGPlusButtonsViewShared.m */; };
 		4AF139701BF384800037B073 /* LGPlusButtonsViewFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF1396F1BF384800037B073 /* LGPlusButtonsViewFramework.h */; };
-		4AF13A261BF3B0E10037B073 /* LGPlusButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF13A221BF3B0E10037B073 /* LGPlusButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AF13A261BF3B0E10037B073 /* LGPlusButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF13A221BF3B0E10037B073 /* LGPlusButton.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AF13A271BF3B0E10037B073 /* LGPlusButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF13A231BF3B0E10037B073 /* LGPlusButton.m */; };
 		4AF13A281BF3B0E10037B073 /* LGPlusButtonsView.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF13A241BF3B0E10037B073 /* LGPlusButtonsView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AF13A291BF3B0E10037B073 /* LGPlusButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF13A251BF3B0E10037B073 /* LGPlusButtonsView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4AA8A3001C0B5D3F005EAE92 /* LGPlusButtonDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPlusButtonDescription.h; sourceTree = "<group>"; };
+		4AA8A3011C0B5D3F005EAE92 /* LGPlusButtonDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPlusButtonDescription.m; sourceTree = "<group>"; };
+		4AA8A3021C0B5D3F005EAE92 /* LGPlusButtonsViewShared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPlusButtonsViewShared.h; sourceTree = "<group>"; };
+		4AA8A3031C0B5D3F005EAE92 /* LGPlusButtonsViewShared.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPlusButtonsViewShared.m; sourceTree = "<group>"; };
 		4AF1396C1BF384800037B073 /* LGPlusButtonsViewFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LGPlusButtonsViewFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AF1396F1BF384800037B073 /* LGPlusButtonsViewFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LGPlusButtonsViewFramework.h; sourceTree = "<group>"; };
 		4AF139711BF384800037B073 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -68,6 +76,10 @@
 				4AF13A231BF3B0E10037B073 /* LGPlusButton.m */,
 				4AF13A241BF3B0E10037B073 /* LGPlusButtonsView.h */,
 				4AF13A251BF3B0E10037B073 /* LGPlusButtonsView.m */,
+				4AA8A3001C0B5D3F005EAE92 /* LGPlusButtonDescription.h */,
+				4AA8A3011C0B5D3F005EAE92 /* LGPlusButtonDescription.m */,
+				4AA8A3021C0B5D3F005EAE92 /* LGPlusButtonsViewShared.h */,
+				4AA8A3031C0B5D3F005EAE92 /* LGPlusButtonsViewShared.m */,
 			);
 			name = LGPlusButtonsView;
 			path = ../LGPlusButtonsView;
@@ -81,7 +93,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AF13A281BF3B0E10037B073 /* LGPlusButtonsView.h in Headers */,
+				4AA8A3061C0B5D40005EAE92 /* LGPlusButtonsViewShared.h in Headers */,
 				4AF13A261BF3B0E10037B073 /* LGPlusButton.h in Headers */,
+				4AA8A3041C0B5D3F005EAE92 /* LGPlusButtonDescription.h in Headers */,
 				4AF139701BF384800037B073 /* LGPlusButtonsViewFramework.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -153,8 +167,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AA8A3071C0B5D40005EAE92 /* LGPlusButtonsViewShared.m in Sources */,
 				4AF13A271BF3B0E10037B073 /* LGPlusButton.m in Sources */,
 				4AF13A291BF3B0E10037B073 /* LGPlusButtonsView.m in Sources */,
+				4AA8A3051C0B5D40005EAE92 /* LGPlusButtonDescription.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

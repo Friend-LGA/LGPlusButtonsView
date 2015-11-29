@@ -28,8 +28,13 @@
 //
 
 #import "LGPlusButtonsView.h"
+#import "LGPlusButton.h"
+#import "LGPlusButtonDescription.h"
+#import "LGPlusButtonsViewShared.h"
 
-#define kLGPlusButtonsViewDegreesToRadians(d) ((d) * M_PI / 180)
+#define kLGPlusButtonsViewDegreesToRadians(d)     ((d) * M_PI / 180)
+#define kLGPlusButtonsViewAssertionWarning(value) [NSString stringWithFormat:@"Number of buttons needs to be equal to numbers of %@", value]
+#define kLGPlusButtonsViewIndexAssertionWarning   [NSString stringWithFormat:@"Index is out of buttons range"]
 
 @interface WrapperView : UIView
 
@@ -41,16 +46,17 @@
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    //NSLog(@"\nself = %@\nsuper = %@\nactionView = %@\nsubviews = %@\n\n", self, [super hitTest:point withEvent:event], _actionView, self.subviews);
-    
-    UIView *superView = [super hitTest:point withEvent:event];
-    
-    UIView *view;
-    if (superView)
-        view = superView;
-    else if (_actionView)
-        view = _actionView;
-    
+    //NSLog(@"\nself = %@\nsuper = %@\nsubviews = %@\nsupersubviews = %@\n\n", self, [super hitTest:point withEvent:event], self.subviews, self.superview.subviews);
+
+    UIView *view = nil;
+
+    if (_actionView)
+    {
+        CGPoint newPoint = [self convertPoint:point toView:_actionView];
+
+        view = [_actionView hitTest:newPoint withEvent:event];
+    }
+
     return view;
 }
 
@@ -58,105 +64,107 @@
 
 #pragma mark -
 
-@interface LGPlusButton (protected)
-
-@property (assign, nonatomic, getter=isShowing) BOOL showing;
-
-@end
-
-#pragma mark -
-
 @interface LGPlusButtonsView ()
 
-typedef enum
+typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 {
-    LGPlusButtondescriptionsPositionLeft  = 0,
-    LGPlusButtondescriptionsPositionRight = 1
-}
-LGPlusButtonDescriptionsPosition;
+    LGPlusButtonDescriptionsPositionLeft  = 0,
+    LGPlusButtonDescriptionsPositionRight = 1
+};
 
 @property (assign, nonatomic, getter=isObserversAdded) BOOL observersAdded;
+@property (assign, nonatomic, getter=isObserversForScrollViewAdded) BOOL observersForScrollViewAdded;
 
 @property (assign, nonatomic) LGPlusButtonDescriptionsPosition descriptionsPosition;
 
 @property (assign, nonatomic) UIView *parentView;
 
-@property (strong, nonatomic) NSMutableArray *buttonWrapperViews1;
-@property (strong, nonatomic) NSMutableArray *buttonWrapperViews2;
-@property (strong, nonatomic) NSMutableArray *descriptionWrapperViews;
+@property (strong, nonatomic) WrapperView *contentView;
+@property (strong, nonatomic) WrapperView *buttonsContentView;
+@property (strong, nonatomic) UIView *descriptionsContentView;
+@property (strong, nonatomic) UIView *coverView;
 
-@property (strong, nonatomic) WrapperView   *plusButtonWrapperView1;
-@property (strong, nonatomic) WrapperView   *plusButtonWrapperView2;
-@property (strong, nonatomic) UILabel       *plusDescription;
-@property (strong, nonatomic) WrapperView   *plusDescriptionWrapperView;
+@property (strong, nonatomic) NSMutableArray *buttonsArray;
+@property (strong, nonatomic) NSMutableArray *buttonWrapperViewsArray1;
+@property (strong, nonatomic) NSMutableArray *buttonWrapperViewsArray2;
+
+@property (strong, nonatomic) NSMutableArray *descriptionsArray;
+@property (strong, nonatomic) NSMutableArray *descriptionWrapperViewsArray;
 
 @property (assign, nonatomic) CGFloat offsetY;
 @property (assign, nonatomic) CGFloat tempOffsetY;
 @property (assign, nonatomic) CGFloat tempDiff;
 
-@property (assign, nonatomic, getter=isShowsPlusButton) BOOL showsPlusButton;
+@property (strong, nonatomic) NSMutableDictionary *contentEdgeInsetsDictionary;
+
+@property (assign, nonatomic, getter=isFirstButtonIsPlusButton) BOOL firstButtonIsPlusButton;
+
+@property (assign, nonatomic) NSTimeInterval hideAnimationCoef;
 
 @end
 
 @implementation LGPlusButtonsView
 
-- (instancetype)initWithView:(UIView *)view
-             numberOfButtons:(NSUInteger)numberOfButtons
-             showsPlusButton:(BOOL)showsPlusButton
+- (instancetype)initWithNumberOfButtons:(NSUInteger)numberOfButtons
+                firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                          showAfterInit:(BOOL)showAfterInit
 {
     self = [super init];
     if (self)
     {
-        _parentView = view;
         _appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical;
         _buttonsAppearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideHorizontal;
-        _showsPlusButton = showsPlusButton;
-        _descriptionOffsetX = 6.f;
+        _firstButtonIsPlusButton = firstButtonIsPlusButton;
         _scrollSensitivity = 64.f;
-        
+        _appearingAnimationSpeed = 0.3;
+        _buttonsAppearingAnimationSpeed = 0.3;
+        _hideAnimationCoef = 0.66;
+        _showHideOnScroll = YES;
+        _disableShowHideOnScrollIfContentSizeLessThenFrame = YES;
+
         // -----
-        
+
+        _contentEdgeInsetsDictionary = [NSMutableDictionary new];
+
+        [self setContentEdgeInsets:UIEdgeInsetsMake(kLGPlusButtonsViewMargin, kLGPlusButtonsViewMargin, kLGPlusButtonsViewMargin, kLGPlusButtonsViewMargin)
+                    forOrientation:LGPlusButtonsViewOrientationAll];
+
+        // -----
+
         self.backgroundColor = [UIColor clearColor];
-        self.hidden = YES;
-        
+        self.userInteractionEnabled = YES;
+
         // -----
-        
-        _buttonWrapperViews1 = [NSMutableArray new];
-        _buttonWrapperViews2 = [NSMutableArray new];
-        _buttons = [NSMutableArray new];
-        
-        if (self.isShowsPlusButton)
-        {
-            _plusButtonWrapperView1 = [WrapperView new];
-            _plusButtonWrapperView1.backgroundColor = [UIColor clearColor];
-            _plusButtonWrapperView1.clipsToBounds = NO;
-            _plusButtonWrapperView1.layer.masksToBounds = NO;
-            _plusButtonWrapperView1.layer.anchorPoint = CGPointMake(0.5, 0.5);
-            _plusButtonWrapperView1.userInteractionEnabled = YES;
-            [self addSubview:_plusButtonWrapperView1];
-            
-            [_buttonWrapperViews1 addObject:_plusButtonWrapperView1];
-            
-            _plusButtonWrapperView2 = [WrapperView new];
-            _plusButtonWrapperView2.backgroundColor = [UIColor clearColor];
-            _plusButtonWrapperView2.clipsToBounds = NO;
-            _plusButtonWrapperView2.layer.masksToBounds = NO;
-            _plusButtonWrapperView2.layer.anchorPoint = CGPointMake(0.5, 0.5);
-            _plusButtonWrapperView2.userInteractionEnabled = YES;
-            [_plusButtonWrapperView1 addSubview:_plusButtonWrapperView2];
-            
-            [_buttonWrapperViews2 addObject:_plusButtonWrapperView2];
-            
-            _plusButton = [LGPlusButton new];
-            [_plusButton addTarget:self action:@selector(plusButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-            [_plusButtonWrapperView2 addSubview:_plusButton];
-            
-            _plusButtonWrapperView2.actionView = _plusButton;
-            [_buttons addObject:_plusButton];
-        }
-        
+
+        _coverView = [UIView new];
+        _coverView.backgroundColor = [UIColor clearColor];
+        _coverView.userInteractionEnabled = YES;
+        [self addSubview:_coverView];
+
+        _contentView = [WrapperView new];
+        _contentView.backgroundColor = [UIColor clearColor];
+        _contentView.userInteractionEnabled = YES;
+        [self addSubview:_contentView];
+
+        _buttonsContentView = [WrapperView new];
+        _buttonsContentView.backgroundColor = [UIColor clearColor];
+        _buttonsContentView.userInteractionEnabled = YES;
+        [_contentView addSubview:_buttonsContentView];
+
+        _descriptionsContentView = [UIView new];
+        _descriptionsContentView.backgroundColor = [UIColor clearColor];
+        _descriptionsContentView.userInteractionEnabled = NO;
+        [_contentView addSubview:_descriptionsContentView];
+
+        UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+        [_coverView addGestureRecognizer:tapGesture];
+
         // -----
-        
+
+        _buttonWrapperViewsArray1 = [NSMutableArray new];
+        _buttonWrapperViewsArray2 = [NSMutableArray new];
+        _buttonsArray = [NSMutableArray new];
+
         for (NSUInteger i=0; i<numberOfButtons; i++)
         {
             WrapperView *wrapperView1 = [WrapperView new];
@@ -165,10 +173,10 @@ LGPlusButtonDescriptionsPosition;
             wrapperView1.layer.masksToBounds = NO;
             wrapperView1.layer.anchorPoint = CGPointMake(0.5, 0.5);
             wrapperView1.userInteractionEnabled = YES;
-            [self addSubview:wrapperView1];
-            
-            [_buttonWrapperViews1 addObject:wrapperView1];
-            
+            [_buttonsContentView addSubview:wrapperView1];
+
+            [_buttonWrapperViewsArray1 addObject:wrapperView1];
+
             WrapperView *wrapperView2 = [WrapperView new];
             wrapperView2.backgroundColor = [UIColor clearColor];
             wrapperView2.clipsToBounds = NO;
@@ -176,132 +184,100 @@ LGPlusButtonDescriptionsPosition;
             wrapperView2.layer.anchorPoint = CGPointMake(0.5, 0.5);
             wrapperView2.userInteractionEnabled = YES;
             [wrapperView1 addSubview:wrapperView2];
-            
-            [_buttonWrapperViews2 addObject:wrapperView2];
-            
+
+            [_buttonWrapperViewsArray2 addObject:wrapperView2];
+
             LGPlusButton *button = [LGPlusButton new];
             button.tag = i;
             [button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+            if (showAfterInit) button.showing = ((firstButtonIsPlusButton && i == 0) || !firstButtonIsPlusButton);
             [wrapperView2 addSubview:button];
-            
+
+            [_buttonsArray addObject:button];
+
             wrapperView2.actionView = button;
-            [_buttons addObject:button];
         }
-        
+
         // -----
-        
-        _descriptionWrapperViews = [NSMutableArray new];
-        _descriptions = [NSMutableArray new];
-        
-        for (NSUInteger i=0; i<_buttons.count; i++)
+
+        _descriptionWrapperViewsArray = [NSMutableArray new];
+        _descriptionsArray = [NSMutableArray new];
+
+        for (NSUInteger i=0; i<_buttonsArray.count; i++)
         {
-            if (i == 0 && self.isShowsPlusButton)
-            {
-                _plusDescriptionWrapperView = [WrapperView new];
-                _plusDescriptionWrapperView.backgroundColor = [UIColor clearColor];
-                _plusDescriptionWrapperView.clipsToBounds = NO;
-                _plusDescriptionWrapperView.layer.masksToBounds = NO;
-                _plusDescriptionWrapperView.layer.anchorPoint = CGPointMake(0.5, 0.5);
-                _plusDescriptionWrapperView.userInteractionEnabled = NO;
-                [self addSubview:_plusDescriptionWrapperView];
-                
-                [_descriptionWrapperViews addObject:_plusDescriptionWrapperView];
-                
-                _plusDescription = [UILabel new];
-                _plusDescription.textColor = [UIColor whiteColor];
-                _plusDescription.textAlignment = NSTextAlignmentCenter;
-                _plusDescription.font = [UIFont systemFontOfSize:14];
-                _plusDescription.numberOfLines = 1;
-                _plusDescription.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8];
-                _plusDescription.layer.cornerRadius = 10.f;
-                _plusDescription.layer.masksToBounds = YES;
-                _plusDescription.userInteractionEnabled = NO;
-                [_plusDescriptionWrapperView addSubview:_plusDescription];
-                
-                [_descriptions addObject:_plusDescription];
-            }
-            else
-            {
-                WrapperView *wrapperView = [WrapperView new];
-                wrapperView.backgroundColor = [UIColor clearColor];
-                wrapperView.clipsToBounds = NO;
-                wrapperView.layer.masksToBounds = NO;
-                wrapperView.layer.anchorPoint = CGPointMake(0.5, 0.5);
-                wrapperView.userInteractionEnabled = NO;
-                [self addSubview:wrapperView];
-                
-                [_descriptionWrapperViews addObject:wrapperView];
-                
-                UILabel *label = [UILabel new];
-                label.textColor = [UIColor whiteColor];
-                label.textAlignment = NSTextAlignmentCenter;
-                label.font = [UIFont systemFontOfSize:14];
-                label.numberOfLines = 1;
-                label.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8];
-                label.layer.cornerRadius = 10.f;
-                label.layer.masksToBounds = YES;
-                label.userInteractionEnabled = NO;
-                [wrapperView addSubview:label];
-                
-                [_descriptions addObject:label];
-            }
+            UIView *wrapperView = [UIView new];
+            wrapperView.backgroundColor = [UIColor clearColor];
+            wrapperView.clipsToBounds = NO;
+            wrapperView.layer.masksToBounds = NO;
+            wrapperView.layer.anchorPoint = CGPointMake(0.5, 0.5);
+            wrapperView.userInteractionEnabled = NO;
+            [_descriptionsContentView addSubview:wrapperView];
+
+            [_descriptionWrapperViewsArray addObject:wrapperView];
+
+            LGPlusButtonDescription *description = [LGPlusButtonDescription new];
+            [wrapperView addSubview:description];
+
+            [_descriptionsArray addObject:description];
         }
-        
+
         // -----
-        
-        [self layoutInvalidate];
-        [_parentView addSubview:self];
+
+        _showing = showAfterInit;
+        self.hidden = !showAfterInit;
+        _coverView.hidden = !(showAfterInit && !firstButtonIsPlusButton);
+        _coverView.alpha = (showAfterInit && !firstButtonIsPlusButton ? 1.f : 0.f);
     }
     return self;
 }
 
-+ (instancetype)plusButtonsViewWithView:(UIView *)view
-                        numberOfButtons:(NSUInteger)numberOfButtons
-                        showsPlusButton:(BOOL)showsPlusButton
++ (instancetype)plusButtonsViewWithNumberOfButtons:(NSUInteger)numberOfButtons
+                           firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                                     showAfterInit:(BOOL)showAfterInit
 {
-    return [[self alloc] initWithView:view
-                      numberOfButtons:numberOfButtons
-                      showsPlusButton:showsPlusButton];
+    return [[self alloc] initWithNumberOfButtons:numberOfButtons
+                         firstButtonIsPlusButton:firstButtonIsPlusButton
+                                   showAfterInit:showAfterInit];
 }
 
 #pragma mark -
 
-- (instancetype)initWithView:(UIView *)view
-             numberOfButtons:(NSUInteger)numberOfButtons
-             showsPlusButton:(BOOL)showsPlusButton
-               actionHandler:(void(^)(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index))actionHandler
-     plusButtonActionHandler:(void(^)(LGPlusButtonsView *plusButtonView))plusButtonActionHandler
+- (instancetype)initWithNumberOfButtons:(NSUInteger)numberOfButtons
+                firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                          showAfterInit:(BOOL)showAfterInit
+                          actionHandler:(void(^)(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index))actionHandler
 {
-    self = [self initWithView:view numberOfButtons:numberOfButtons showsPlusButton:showsPlusButton];
+    self = [self initWithNumberOfButtons:numberOfButtons
+                 firstButtonIsPlusButton:firstButtonIsPlusButton
+                           showAfterInit:showAfterInit];
     if (self)
     {
         _actionHandler = actionHandler;
-        _plusButtonActionHandler = plusButtonActionHandler;
     }
     return self;
 }
 
-+ (instancetype)plusButtonsViewWithView:(UIView *)view
-                        numberOfButtons:(NSUInteger)numberOfButtons
-                        showsPlusButton:(BOOL)showsPlusButton
-                          actionHandler:(void(^)(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index))actionHandler
-                plusButtonActionHandler:(void(^)(LGPlusButtonsView *plusButtonView))plusButtonActionHandler
++ (instancetype)plusButtonsViewWithNumberOfButtons:(NSUInteger)numberOfButtons
+                           firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                                     showAfterInit:(BOOL)showAfterInit
+                                     actionHandler:(void(^)(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index))actionHandler
 {
-    return [[self alloc] initWithView:view
-                      numberOfButtons:numberOfButtons
-                      showsPlusButton:showsPlusButton
-                        actionHandler:actionHandler
-              plusButtonActionHandler:plusButtonActionHandler];
+    return [[self alloc] initWithNumberOfButtons:numberOfButtons
+                         firstButtonIsPlusButton:firstButtonIsPlusButton
+                                   showAfterInit:showAfterInit
+                                   actionHandler:actionHandler];
 }
 
 #pragma mark -
 
-- (instancetype)initWithView:(UIView *)view
-             numberOfButtons:(NSUInteger)numberOfButtons
-             showsPlusButton:(BOOL)showsPlusButton
-                    delegate:(id<LGPlusButtonsViewDelegate>)delegate
+- (instancetype)initWithNumberOfButtons:(NSUInteger)numberOfButtons
+                firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                          showAfterInit:(BOOL)showAfterInit
+                               delegate:(id<LGPlusButtonsViewDelegate>)delegate
 {
-    self = [self initWithView:view numberOfButtons:numberOfButtons showsPlusButton:showsPlusButton];
+    self = [self initWithNumberOfButtons:numberOfButtons
+                 firstButtonIsPlusButton:firstButtonIsPlusButton
+                           showAfterInit:showAfterInit];
     if (self)
     {
         _delegate = delegate;
@@ -309,15 +285,15 @@ LGPlusButtonDescriptionsPosition;
     return self;
 }
 
-+ (instancetype)plusButtonsViewWithView:(UIView *)view
-                        numberOfButtons:(NSUInteger)numberOfButtons
-                        showsPlusButton:(BOOL)showsPlusButton
-                               delegate:(id<LGPlusButtonsViewDelegate>)delegate
++ (instancetype)plusButtonsViewWithNumberOfButtons:(NSUInteger)numberOfButtons
+                           firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                                     showAfterInit:(BOOL)showAfterInit
+                                          delegate:(id<LGPlusButtonsViewDelegate>)delegate
 {
-    return [[self alloc] initWithView:view
-                      numberOfButtons:numberOfButtons
-                      showsPlusButton:showsPlusButton
-                             delegate:delegate];
+    return [[self alloc] initWithNumberOfButtons:numberOfButtons
+                         firstButtonIsPlusButton:firstButtonIsPlusButton
+                                   showAfterInit:showAfterInit
+                                        delegate:delegate];
 }
 
 #pragma mark - Dealloc
@@ -331,656 +307,987 @@ LGPlusButtonDescriptionsPosition;
 
 #pragma mark -
 
-- (void)willMoveToSuperview:(UIView *)newSuperview
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    [super willMoveToSuperview:newSuperview];
+    //NSLog(@"\nself = %@\nsuper = %@\nsubviews = %@\nsupersubviews = %@\n\n", self, [super hitTest:point withEvent:event], self.subviews, self.superview.subviews);
 
-    if (!newSuperview)
-        [self removeObservers];
-    else
-        [self addObservers];
+    UIView *view = nil;
+
+    for (LGPlusButton *button in _buttonsArray)
+    {
+        CGPoint newPoint = [self convertPoint:point toView:button];
+
+        view = [button hitTest:newPoint withEvent:event];
+        if (view) break;
+    }
+
+    if (!view && _coverColor && !_coverView.isHidden)
+    {
+        CGPoint newPoint = [self convertPoint:point toView:_coverView];
+
+        view = [_coverView hitTest:newPoint withEvent:event];
+    }
+
+    return view;
 }
 
--(id)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-	id hitView = [super hitTest:point withEvent:event];
-	if (hitView == self) {
-		return nil;
-	} else {
-		return hitView;
-	}
+#pragma mark -
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    [self removeObservers:self.superview];
+
+    if (newSuperview)
+        [self addObservers:newSuperview];
+
+    [super willMoveToSuperview:newSuperview];
 }
 
 #pragma mark - Setters and Getters
 
-- (void)setAlwaysVisible:(BOOL)alwaysVisible
+- (void)setCoverColor:(UIColor *)coverColor
 {
-    _alwaysVisible = alwaysVisible;
+    _coverColor = coverColor;
 
-    if (alwaysVisible)
-        [self showAnimated:NO completionHandler:nil];
+    _coverView.backgroundColor = coverColor;
 }
+
+- (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *contentEdgeInsetsString = NSStringFromUIEdgeInsets(contentEdgeInsets);
+
+    [_contentEdgeInsetsDictionary setObject:contentEdgeInsetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_contentEdgeInsetsDictionary setObject:contentEdgeInsetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_contentEdgeInsetsDictionary setObject:contentEdgeInsetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (UIEdgeInsets)contentEdgeInsetsForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *contentEdgeInsetsString = [_contentEdgeInsetsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (contentEdgeInsetsString ? UIEdgeInsetsFromString(contentEdgeInsetsString) : UIEdgeInsetsZero);
+}
+
+#pragma mark Buttons all
 
 - (void)setButtonsTitles:(NSArray *)titles forState:(UIControlState)state
 {
-    BOOL isChanged = NO;
-    
-    for (NSUInteger i=0; i<_buttons.count; i++)
-    {
-        LGPlusButton *button = _buttons[i];
-        
-        if (![button.titleLabel.text isEqualToString:titles[i]])
-        {
-            [button setTitle:titles[i] forState:state];
-            
-            isChanged = YES;
-        }
-    }
-    
-    if (isChanged) [self layoutInvalidate];
+    NSAssert(_buttonsArray.count == titles.count, kLGPlusButtonsViewAssertionWarning(@"titles"));
+
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+        if ([titles[i] isKindOfClass:[NSString class]])
+            [_buttonsArray[i] setTitle:titles[i] forState:state];
+
+    [self setNeedsLayout];
 }
 
 - (void)setButtonsTitleColor:(UIColor *)titleColor forState:(UIControlState)state
 {
-    for (LGPlusButton *button in _buttons)
+    for (LGPlusButton *button in _buttonsArray)
         [button setTitleColor:titleColor forState:state];
 }
 
-- (void)setButtonsImage:(UIImage *)image forState:(UIControlState)state
+- (void)setButtonsTitleColors:(NSArray *)titleColors forState:(UIControlState)state
 {
-    BOOL isChanged = NO;
-    
-    for (LGPlusButton *button in _buttons)
-    {
-        if (!CGSizeEqualToSize(button.imageView.image.size, image.size))
-            isChanged = YES;
-        
-        [button setImage:image forState:state];
-    }
-    
-    if (isChanged) [self layoutInvalidate];
-}
+    NSAssert(_buttonsArray.count == titleColors.count, kLGPlusButtonsViewAssertionWarning(@"title colors"));
 
-- (void)setButtonsImages:(NSArray *)images forState:(UIControlState)state
-{
-    BOOL isChanged = NO;
-
-    for (NSUInteger i=0; i<_buttons.count; i++)
-    {
-        LGPlusButton *button = _buttons[i];
-        UIImage *image = images[i];
-
-        if (!CGSizeEqualToSize(button.imageView.image.size, image.size))
-            isChanged = YES;
-
-        [button setImage:image forState:state];
-    }
-
-    if (isChanged) [self layoutInvalidate];
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+        if ([titleColors[i] isKindOfClass:[UIColor class]])
+            [_buttonsArray[i] setTitleColor:titleColors[i] forState:state];
 }
 
 - (void)setButtonsBackgroundImage:(UIImage *)backgroundImage forState:(UIControlState)state
 {
-    for (LGPlusButton *button in _buttons)
+    for (LGPlusButton *button in _buttonsArray)
         [button setBackgroundImage:backgroundImage forState:state];
 }
 
 - (void)setButtonsBackgroundImages:(NSArray *)backgroundImages forState:(UIControlState)state
 {
-    for (NSUInteger i=0; i<_buttons.count; i++)
-    {
-        LGPlusButton *button = _buttons[i];
-        UIImage *backgroundImage = backgroundImages[i];
+    NSAssert(_buttonsArray.count == backgroundImages.count, kLGPlusButtonsViewAssertionWarning(@"background images"));
 
-        [button setBackgroundImage:backgroundImage forState:state];
-    }
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+        if ([backgroundImages[i] isKindOfClass:[UIImage class]])
+            [_buttonsArray[i] setBackgroundImage:backgroundImages[i] forState:state];
 }
 
 - (void)setButtonsBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state
 {
-    for (LGPlusButton *button in _buttons)
+    for (LGPlusButton *button in _buttonsArray)
         [button setBackgroundColor:backgroundColor forState:state];
 }
 
 - (void)setButtonsBackgroundColors:(NSArray *)backgroundColors forState:(UIControlState)state
 {
-    for (NSUInteger i=0; i<_buttons.count; i++)
-    {
-        LGPlusButton *button = _buttons[i];
-        UIColor *backgroundColor = backgroundColors[i];
+    NSAssert(_buttonsArray.count == backgroundColors.count, kLGPlusButtonsViewAssertionWarning(@"background colors"));
 
-        [button setBackgroundColor:backgroundColor forState:state];
-    }
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+        if ([backgroundColors[i] isKindOfClass:[UIColor class]])
+            [_buttonsArray[i] setBackgroundColor:backgroundColors[i] forState:state];
 }
 
-- (void)setButtonsTitleFont:(UIFont *)font
+- (void)setButtonsImage:(UIImage *)image forState:(UIControlState)state forOrientation:(LGPlusButtonsViewOrientation)orientation
 {
-    BOOL isChanged = NO;
-    
-    for (LGPlusButton *button in _buttons)
-        if (![button.titleLabel.font isEqual:font])
-        {
-            button.titleLabel.font = font;
-            
-            isChanged = YES;
-        }
-    
-    if (isChanged) [self layoutInvalidate];
+    for (LGPlusButton *button in _buttonsArray)
+        [button setImage:image forState:state forOrientation:orientation];
+
+    [self setNeedsLayout];
 }
+
+- (void)setButtonsImages:(NSArray *)images forState:(UIControlState)state forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count == images.count, kLGPlusButtonsViewAssertionWarning(@"images"));
+
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+        if ([images[i] isKindOfClass:[UIImage class]])
+            [_buttonsArray[i] setImage:images[i] forState:state forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+#pragma mark //
+
+- (void)setButtonsTitleFont:(UIFont *)font forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setTitleFont:font forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonsInsets:(UIEdgeInsets)insets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setInsets:insets forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonsOffset:(CGPoint)offset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setOffset:offset forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonsSize:(CGSize)size forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setSize:size forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonsContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setContentEdgeInsets:contentEdgeInsets forOrientation:orientation];
+}
+
+- (void)setButtonsTitleOffset:(CGPoint)titleOffset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setTitleOffset:titleOffset forOrientation:orientation];
+}
+
+- (void)setButtonsImageOffset:(CGPoint)imageOffset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButton *button in _buttonsArray)
+        [button setImageOffset:imageOffset forOrientation:orientation];
+}
+
+#pragma mark //
 
 - (void)setButtonsImageViewContentMode:(UIViewContentMode)contentMode
 {
-    for (LGPlusButton *button in _buttons)
+    for (LGPlusButton *button in _buttonsArray)
         button.imageView.contentMode = contentMode;
 }
 
-#pragma mark -
-
-- (void)setDescriptionsTexts:(NSArray *)texts
-{
-    BOOL isChanged = NO;
-    
-    for (NSUInteger i=0; i<_descriptions.count; i++)
-    {
-        UILabel *label = _descriptions[i];
-        
-        if (![label.text isEqualToString:texts[i]])
-        {
-            label.text = texts[i];
-            
-            isChanged = YES;
-        }
-    }
-    
-    if (isChanged) [self layoutInvalidate];
-}
-
-- (void)setDescriptionsTextColor:(UIColor *)textColor
-{
-    for (UILabel *label in _descriptions)
-        label.textColor = textColor;
-}
-
-- (void)setDescriptionsBackgroundColor:(UIColor *)backgroundColor
-{
-    for (UILabel *label in _descriptions)
-        label.backgroundColor = backgroundColor;
-}
-
-- (void)setDescriptionsFont:(UIFont *)font
-{
-    BOOL isChanged = NO;
-    
-    for (UILabel *label in _descriptions)
-        if (![label.font isEqual:font])
-        {
-            label.font = font;
-            
-            isChanged = YES;
-        }
-    
-    if (isChanged) [self layoutInvalidate];
-}
-
-- (void)setDescriptionOffsetX:(CGFloat)descriptionOffsetX
-{
-    if (_descriptionOffsetX != descriptionOffsetX)
-    {
-        _descriptionOffsetX = descriptionOffsetX;
-        
-        [self layoutInvalidate];
-    }
-}
-
-#pragma mark -
-
 - (void)setButtonsClipsToBounds:(BOOL)clipsToBounds
 {
-    for (LGPlusButton *button in _buttons)
+    for (LGPlusButton *button in _buttonsArray)
         button.clipsToBounds = clipsToBounds;
-}
-
-- (void)setButtonsContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets
-{
-    BOOL isChanged = NO;
-    
-    for (LGPlusButton *button in _buttons)
-        if (!UIEdgeInsetsEqualToEdgeInsets(button.contentEdgeInsets, contentEdgeInsets))
-        {
-            button.contentEdgeInsets = contentEdgeInsets;
-            
-            isChanged = YES;
-        }
-    
-    if (isChanged) [self layoutInvalidate];
 }
 
 - (void)setButtonsAdjustsImageWhenHighlighted:(BOOL)adjustsImageWhenHighlighted
 {
-    for (LGPlusButton *button in _buttons)
+    for (LGPlusButton *button in _buttonsArray)
         button.adjustsImageWhenHighlighted = adjustsImageWhenHighlighted;
 }
 
-#pragma mark -
-
-- (void)setButtonsLayerShouldRasterize:(BOOL)shouldRasterize
+- (void)setButtonsAdjustsImageWhenDisabled:(BOOL)adjustsImageWhenDisabled
 {
-    for (LGPlusButton *button in _buttons)
-        button.layer.shouldRasterize = shouldRasterize;
+    for (LGPlusButton *button in _buttonsArray)
+        button.adjustsImageWhenDisabled = adjustsImageWhenDisabled;
 }
 
-- (void)setButtonsLayerMasksToBounds:(BOOL)masksToBounds
+- (void)setButtonsEnabled:(BOOL)enabled
 {
-    for (LGPlusButton *button in _buttons)
-        button.layer.masksToBounds = masksToBounds;
+    for (LGPlusButton *button in _buttonsArray)
+        button.enabled = enabled;
 }
 
-- (void)setButtonsLayerCornerRadius:(CGFloat)cornerRadius
+#pragma mark //
+
+- (void)setButtonsLayerCornerRadius:(CGFloat)cornerRadius forOrientation:(LGPlusButtonsViewOrientation)orientation;
 {
-    for (LGPlusButton *button in _buttons)
-        button.layer.cornerRadius = cornerRadius;
+    for (LGPlusButton *button in _buttonsArray)
+        [button setLayerCornerRadius:cornerRadius forOrientation:orientation];
 }
 
-- (void)setButtonsLayerBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth
+- (void)setButtonsLayerBorderColor:(UIColor *)borderColor
 {
-    for (LGPlusButton *button in _buttons)
-    {
+    for (LGPlusButton *button in _buttonsArray)
         button.layer.borderColor = borderColor.CGColor;
+}
+
+- (void)setButtonsLayerBorderWidth:(CGFloat)borderWidth
+{
+    for (LGPlusButton *button in _buttonsArray)
         button.layer.borderWidth = borderWidth;
-    }
 }
 
-- (void)setButtonsLayerShadowColor:(UIColor *)shadowColor shadowOpacity:(float)shadowOpacity shadowOffset:(CGSize)shadowOffset shadowRadius:(CGFloat)shadowRadius
+- (void)setButtonsLayerShadowColor:(UIColor *)shadowColor
 {
-    for (LGPlusButton *button in _buttons)
-    {
-        button.layer.shadowColor = shadowColor.CGColor;
-        button.layer.shadowOpacity = shadowOpacity;
-        button.layer.shadowOffset = shadowOffset;
-        button.layer.shadowRadius = shadowRadius;
-    }
+    _buttonsContentView.layer.shadowColor = shadowColor.CGColor;
 }
 
-#pragma mark -
-
-- (void)setContentInset:(UIEdgeInsets)contentInset
+- (void)setButtonsLayerShadowRadius:(CGFloat)shadowRadius
 {
-    if (!UIEdgeInsetsEqualToEdgeInsets(_contentInset, contentInset))
-    {
-        _contentInset = contentInset;
-        
-        [self layoutInvalidate];
-    }
+    _buttonsContentView.layer.shadowRadius = shadowRadius;
 }
 
-- (void)setButtonInset:(UIEdgeInsets)buttonInset
+- (void)setButtonsLayerShadowOpacity:(CGFloat)shadowOpacity
 {
-    if (!UIEdgeInsetsEqualToEdgeInsets(_buttonInset, buttonInset))
-    {
-        _buttonInset = buttonInset;
-        
-        [self layoutInvalidate];
-    }
+    _buttonsContentView.layer.shadowOpacity = shadowOpacity;
 }
 
-- (void)setButtonsSize:(CGSize)buttonsSize
+- (void)setButtonsLayerShadowOffset:(CGSize)shadowOffset
 {
-    if (!CGSizeEqualToSize(_buttonsSize, buttonsSize))
-    {
-        _buttonsSize = buttonsSize;
-        
-        [self layoutInvalidate];
-    }
+    _buttonsContentView.layer.shadowOffset = shadowOffset;
 }
 
-- (void)setPlusButtonSize:(CGSize)plusButtonSize
+#pragma mark Button at index
+
+- (void)setButtonAtIndex:(NSUInteger)index title:(NSString *)title forState:(UIControlState)state
 {
-    if (!CGSizeEqualToSize(_plusButtonSize, plusButtonSize))
-    {
-        _plusButtonSize = plusButtonSize;
-        
-        [self layoutInvalidate];
-    }
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setTitle:title forState:state];
+
+    [self setNeedsLayout];
 }
+
+- (void)setButtonAtIndex:(NSUInteger)index titleColor:(UIColor *)titleColor forState:(UIControlState)state
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setTitleColor:titleColor forState:state];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index backgroundImage:(UIImage *)backgroundImage forState:(UIControlState)state
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setBackgroundImage:backgroundImage forState:state];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index backgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setBackgroundColor:backgroundColor forState:state];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index image:(UIImage *)image forState:(UIControlState)state forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setImage:image forState:state forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+#pragma mark //
+
+- (void)setButtonAtIndex:(NSUInteger)index titleFont:(UIFont *)font forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setTitleFont:font forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index insets:(UIEdgeInsets)insets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setInsets:insets forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index offset:(CGPoint)offset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setOffset:offset forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index size:(CGSize)size forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setSize:size forOrientation:orientation];
+
+    [self setNeedsLayout];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index contentEdgeInsets:(UIEdgeInsets)contentEdgeInsets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setContentEdgeInsets:contentEdgeInsets forOrientation:orientation];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index titleOffset:(CGPoint)titleOffset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setTitleOffset:titleOffset forOrientation:orientation];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index imageOffset:(CGPoint)imageOffset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setImageOffset:imageOffset forOrientation:orientation];
+}
+
+#pragma mark //
+
+- (void)setButtonAtIndex:(NSUInteger)index imageViewContentMode:(UIViewContentMode)contentMode
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] imageView].contentMode = contentMode;
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index clipsToBounds:(BOOL)clipsToBounds
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setClipsToBounds:clipsToBounds];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index adjustsImageWhenHighlighted:(BOOL)adjustsImageWhenHighlighted
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setAdjustsImageWhenHighlighted:adjustsImageWhenHighlighted];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index adjustsImageWhenDisabled:(BOOL)adjustsImageWhenDisabled
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setAdjustsImageWhenDisabled:adjustsImageWhenDisabled];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index enabled:(BOOL)enabled
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setEnabled:enabled];
+}
+
+#pragma mark //
+
+- (void)setButtonAtIndex:(NSUInteger)index layerCornerRadius:(CGFloat)cornerRadius forOrientation:(LGPlusButtonsViewOrientation)orientation;
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] setLayerCornerRadius:cornerRadius forOrientation:orientation];
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index layerBorderColor:(UIColor *)borderColor
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] layer].borderColor = borderColor.CGColor;
+}
+
+- (void)setButtonAtIndex:(NSUInteger)index layerBorderWidth:(CGFloat)borderWidth
+{
+    NSAssert(_buttonsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_buttonsArray[index] layer].borderWidth = borderWidth;
+}
+
+#pragma mark Descriptions all
+
+- (void)setDescriptionsTexts:(NSArray *)texts
+{
+    NSAssert(_descriptionsArray.count == texts.count, kLGPlusButtonsViewAssertionWarning(@"texts"));
+
+    for (NSUInteger i=0; i<_descriptionsArray.count; i++)
+        [_descriptionsArray[i] setText:texts[i]];
+
+    [self setNeedsLayout];
+}
+
+- (void)setDescriptionsTextColor:(UIColor *)textColor
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        description.textColor = textColor;
+}
+
+- (void)setDescriptionsBackgroundColor:(UIColor *)backgroundColor
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        description.backgroundColor = backgroundColor;
+}
+
+#pragma mark //
+
+- (void)setDescriptionsFont:(UIFont *)font forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        [description setFont:font forOrientation:orientation];
+}
+
+- (void)setDescriptionsInsets:(UIEdgeInsets)insets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        [description setInsets:insets forOrientation:orientation];
+}
+
+- (void)setDescriptionsOffset:(CGPoint)offset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        [description setOffset:offset forOrientation:orientation];
+}
+
+- (void)setDescriptionsSize:(CGSize)size forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        [description setSize:size forOrientation:orientation];
+}
+
+- (void)setDescriptionsContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        [description setContentEdgeInsets:contentEdgeInsets forOrientation:orientation];
+}
+
+#pragma mark //
+
+- (void)setDescriptionsLayerCornerRadius:(CGFloat)cornerRadius forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        [description setLayerCornerRadius:cornerRadius forOrientation:orientation];
+}
+
+- (void)setDescriptionsLayerBorderColor:(UIColor *)borderColor
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        description.layer.borderColor = borderColor.CGColor;
+}
+
+- (void)setDescriptionsLayerBorderWidth:(CGFloat)borderWidth
+{
+    for (LGPlusButtonDescription *description in _descriptionsArray)
+        description.layer.borderWidth = borderWidth;
+}
+
+- (void)setDescriptionsLayerShadowColor:(UIColor *)shadowColor
+{
+    _descriptionsContentView.layer.shadowColor = shadowColor.CGColor;
+}
+
+- (void)setDescriptionsLayerShadowRadius:(CGFloat)shadowRadius
+{
+    _descriptionsContentView.layer.shadowRadius = shadowRadius;
+}
+
+- (void)setDescriptionsLayerShadowOpacity:(CGFloat)shadowOpacity
+{
+    _descriptionsContentView.layer.shadowOpacity = shadowOpacity;
+}
+
+- (void)setDescriptionsLayerShadowOffset:(CGSize)shadowOffset
+{
+    _descriptionsContentView.layer.shadowOffset = shadowOffset;
+}
+
+#pragma mark Description at index
+
+- (void)setDescriptionAtIndex:(NSUInteger)index text:(NSString *)text
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setText:text];
+
+    [self setNeedsLayout];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index textColor:(UIColor *)textColor
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setTextColor:textColor];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index backgroundColor:(UIColor *)backgroundColor
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setBackgroundColor:backgroundColor];
+}
+
+#pragma mark //
+
+- (void)setDescriptionAtIndex:(NSUInteger)index font:(UIFont *)font forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setFont:font forOrientation:orientation];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index insets:(UIEdgeInsets)insets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setInsets:insets forOrientation:orientation];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index offset:(CGPoint)offset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setOffset:offset forOrientation:orientation];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index size:(CGSize)size forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setSize:size forOrientation:orientation];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index contentEdgeInsets:(UIEdgeInsets)contentEdgeInsets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setContentEdgeInsets:contentEdgeInsets forOrientation:orientation];
+}
+
+#pragma mark //
+
+- (void)setDescriptionAtIndex:(NSUInteger)index layerCornerRadius:(CGFloat)cornerRadius forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] setLayerCornerRadius:cornerRadius forOrientation:orientation];
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index layerBorderColor:(UIColor *)borderColor
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] layer].borderColor = borderColor.CGColor;
+}
+
+- (void)setDescriptionAtIndex:(NSUInteger)index layerBorderWidth:(CGFloat)borderWidth
+{
+    NSAssert(_descriptionsArray.count > index, kLGPlusButtonsViewIndexAssertionWarning);
+
+    [_descriptionsArray[index] layer].borderWidth = borderWidth;
+}
+
+#pragma mark - View
 
 - (void)setPosition:(LGPlusButtonsViewPosition)position
 {
-    if (_position != position)
-    {
-        _position = position;
-        
-        if (_position == LGPlusButtonsViewPositionBottomRight || _position == LGPlusButtonsViewPositionTopRight)
-            _descriptionsPosition = LGPlusButtondescriptionsPositionLeft;
-        else
-            _descriptionsPosition = LGPlusButtondescriptionsPositionRight;
-        
-        [self layoutInvalidate];
-    }
+    _position = position;
+
+    if (_position == LGPlusButtonsViewPositionBottomRight || _position == LGPlusButtonsViewPositionTopRight)
+        _descriptionsPosition = LGPlusButtonDescriptionsPositionLeft;
+    else
+        _descriptionsPosition = LGPlusButtonDescriptionsPositionRight;
+
+    [self setNeedsLayout];
 }
 
 - (void)setOffset:(CGPoint)offset
 {
-    if (!CGPointEqualToPoint(_offset, offset))
-    {
-        _offset = offset;
-        
-        [self layoutInvalidate];
-    }
+    _offset = offset;
+
+    [self setNeedsLayout];
 }
 
 #pragma mark -
 
-- (void)layoutInvalidate
+- (void)layoutSubviews
 {
-    if (self.superview)
+    [super layoutSubviews];
+
+    // -----
+
+    LGPlusButtonsViewOrientation orientation = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation) ? LGPlusButtonsViewOrientationPortrait : LGPlusButtonsViewOrientationLandscape;
+
+    // -----
+
+    UIEdgeInsets parentInset = UIEdgeInsetsZero;
+    CGPoint parentOffset = CGPointZero;
+
+    if ([self.superview isKindOfClass:[UIScrollView class]])
     {
-        UIEdgeInsets parentInset = UIEdgeInsetsZero;
-        CGPoint parentOffset = CGPointZero;
-        
-        if ([_parentView isKindOfClass:[UIScrollView class]])
+        UIScrollView *parentScrollView = (UIScrollView *)self.superview;
+
+        parentInset = parentScrollView.contentInset;
+        parentOffset = parentScrollView.contentOffset;
+    }
+
+    // -----
+
+    CGRect selfFrame = CGRectMake(parentOffset.x, parentOffset.y, self.superview.bounds.size.width, self.superview.bounds.size.height);
+    if ([UIScreen mainScreen].scale == 1.f)
+        selfFrame = CGRectIntegral(selfFrame);
+    self.frame = selfFrame;
+
+    _coverView.frame = CGRectMake(0.f, 0.f, selfFrame.size.width, selfFrame.size.height);
+
+    // -----
+
+    CGSize buttonsContentViewSize = CGSizeZero;
+
+    for (LGPlusButton *button in _buttonsArray)
+    {
+        [button updateParametersForOrientation:orientation];
+
+        if (CGSizeEqualToSize([button sizeForOrientation:orientation], CGSizeZero))
         {
-            UIScrollView *parentScrollView = (UIScrollView *)_parentView;
-            
-            parentInset = parentScrollView.contentInset;
-            parentOffset = parentScrollView.contentOffset;
+            CGSize size = [button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+
+            [button setSize:size forOrientation:orientation];
         }
-        
-        // -----
-        
-        NSMutableArray *buttonsSizeArray = [NSMutableArray new];
-        
-        CGSize selfSize = CGSizeMake(_buttonInset.left+_buttonInset.right+_contentInset.left+_contentInset.right,
-                                     (_buttonInset.left+_buttonInset.right)*_buttons.count+_contentInset.top+_contentInset.bottom);
-        
-        if (!CGSizeEqualToSize(_buttonsSize, CGSizeZero))
+
+        CGSize buttonSize = [button sizeForOrientation:orientation];
+        UIEdgeInsets buttonInsets = [button insetsForOrientation:orientation];
+
+        buttonsContentViewSize.width = MAX(buttonsContentViewSize.width, buttonSize.width + buttonInsets.left + buttonInsets.right);
+        buttonsContentViewSize.height += [button sizeForOrientation:orientation].height + buttonInsets.top + buttonInsets.bottom;
+    }
+
+    // -----
+
+    UIEdgeInsets contentEdgeInsets = [self contentEdgeInsetsForOrientation:orientation];
+
+    CGRect contentViewFrame = CGRectMake(parentInset.left+contentEdgeInsets.left,
+                                         parentInset.top+contentEdgeInsets.top,
+                                         selfFrame.size.width-parentInset.left-parentInset.right-contentEdgeInsets.left-contentEdgeInsets.right,
+                                         selfFrame.size.height-parentInset.top-parentInset.bottom-contentEdgeInsets.top-contentEdgeInsets.bottom);
+    if ([UIScreen mainScreen].scale == 1.f)
+        contentViewFrame = CGRectIntegral(contentViewFrame);
+    _contentView.frame = contentViewFrame;
+
+    // -----
+
+    CGPoint buttonsContentViewOrigin = CGPointZero;
+    if (_position == LGPlusButtonsViewPositionBottomRight)
+        buttonsContentViewOrigin = CGPointMake(contentViewFrame.size.width-buttonsContentViewSize.width, contentViewFrame.size.height-buttonsContentViewSize.height);
+    else if (_position == LGPlusButtonsViewPositionBottomLeft)
+        buttonsContentViewOrigin = CGPointMake(0.f, contentViewFrame.size.height-buttonsContentViewSize.height);
+    else if (_position == LGPlusButtonsViewPositionTopRight)
+        buttonsContentViewOrigin = CGPointMake(contentViewFrame.size.width-buttonsContentViewSize.width, 0.f);
+    else if (_position == LGPlusButtonsViewPositionTopLeft)
+        buttonsContentViewOrigin = CGPointMake(0.f, 0.f);
+
+    buttonsContentViewOrigin.x += _offset.x;
+    buttonsContentViewOrigin.y += _offset.y;
+
+    CGRect buttonsContentViewFrame = CGRectMake(buttonsContentViewOrigin.x, buttonsContentViewOrigin.y, buttonsContentViewSize.width, buttonsContentViewSize.height);
+    if ([UIScreen mainScreen].scale == 1.f)
+        buttonsContentViewFrame = CGRectIntegral(buttonsContentViewFrame);
+    _buttonsContentView.frame = buttonsContentViewFrame;
+
+    // -----
+
+    CGRect descriptionsContentViewFrame = CGRectZero;
+
+    if (_descriptionsPosition == LGPlusButtonDescriptionsPositionLeft)
+        descriptionsContentViewFrame = CGRectMake(0.f,
+                                                  buttonsContentViewFrame.origin.y,
+                                                  contentViewFrame.size.width-buttonsContentViewFrame.size.width,
+                                                  buttonsContentViewFrame.size.height);
+    else
+        descriptionsContentViewFrame = CGRectMake(buttonsContentViewFrame.origin.x+buttonsContentViewFrame.size.width,
+                                                  buttonsContentViewFrame.origin.y,
+                                                  contentViewFrame.size.width-(buttonsContentViewFrame.origin.x+buttonsContentViewFrame.size.width),
+                                                  buttonsContentViewFrame.size.height);
+
+    if ([UIScreen mainScreen].scale == 1.f)
+        descriptionsContentViewFrame = CGRectIntegral(descriptionsContentViewFrame);
+    _descriptionsContentView.frame = descriptionsContentViewFrame;
+
+    // -----
+
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+    {
+        WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[i];
+        WrapperView *buttonWrapperView2 = _buttonWrapperViewsArray2[i];
+        LGPlusButton *button = _buttonsArray[i];
+
+        CGSize buttonSize = [button sizeForOrientation:orientation];
+        UIEdgeInsets buttonInsets = [button insetsForOrientation:orientation];
+        CGPoint buttonOffset = [button offsetForOrientation:orientation];
+
+        CGRect buttonFrame = CGRectZero;
+
+        if (i == 0)
         {
-            if (!CGSizeEqualToSize(_plusButtonSize, CGSizeZero) && self.isShowsPlusButton)
-            {
-                selfSize.width += MAX(_plusButtonSize.width, _buttonsSize.width);
-                selfSize.height += _plusButtonSize.height+(_buttonsSize.height*_buttons.count-1);
-            }
-            else
-            {
-                selfSize.width += _buttonsSize.width;
-                selfSize.height += _buttonsSize.height*_buttons.count;
-            }
+            if (_position == LGPlusButtonsViewPositionBottomRight)
+                buttonFrame = CGRectMake(buttonsContentViewSize.width-buttonInsets.right-buttonSize.width,
+                                         buttonsContentViewFrame.size.height-buttonInsets.bottom-buttonSize.height,
+                                         buttonSize.width,
+                                         buttonSize.height);
+            else if (_position == LGPlusButtonsViewPositionBottomLeft)
+                buttonFrame = CGRectMake(buttonInsets.left,
+                                         buttonsContentViewFrame.size.height-buttonInsets.bottom-buttonSize.height,
+                                         buttonSize.width,
+                                         buttonSize.height);
+            else if (_position == LGPlusButtonsViewPositionTopRight)
+                buttonFrame = CGRectMake(buttonsContentViewSize.width-buttonInsets.right-buttonSize.width,
+                                         buttonInsets.top,
+                                         buttonSize.width,
+                                         buttonSize.height);
+            else if (_position == LGPlusButtonsViewPositionTopLeft)
+                buttonFrame = CGRectMake(buttonInsets.left,
+                                         buttonInsets.top,
+                                         buttonSize.width,
+                                         buttonSize.height);
         }
         else
         {
-            CGFloat width = 0.f;
-            
-            for (NSUInteger i=0; i<_buttons.count; i++)
+            CGRect previousWrapperFrame = [_buttonWrapperViewsArray1[i-1] frame];
+
+            if (_position == LGPlusButtonsViewPositionBottomRight)
+                buttonFrame = CGRectMake(buttonsContentViewSize.width-buttonInsets.right-buttonSize.width,
+                                         previousWrapperFrame.origin.y-buttonInsets.top-buttonInsets.bottom-buttonSize.height,
+                                         buttonSize.width,
+                                         buttonSize.height);
+            else if (_position == LGPlusButtonsViewPositionBottomLeft)
+                buttonFrame = CGRectMake(buttonInsets.left,
+                                         previousWrapperFrame.origin.y-buttonInsets.top-buttonInsets.bottom-buttonSize.height,
+                                         buttonSize.width,
+                                         buttonSize.height);
+            else if (_position == LGPlusButtonsViewPositionTopRight)
+                buttonFrame = CGRectMake(buttonsContentViewSize.width-buttonInsets.right-buttonSize.width,
+                                         previousWrapperFrame.origin.y+previousWrapperFrame.size.height+buttonInsets.bottom+buttonInsets.top,
+                                         buttonSize.width,
+                                         buttonSize.height);
+            else if (_position == LGPlusButtonsViewPositionTopLeft)
+                buttonFrame = CGRectMake(buttonInsets.left,
+                                         previousWrapperFrame.origin.y+previousWrapperFrame.size.height+buttonInsets.bottom+buttonInsets.top,
+                                         buttonSize.width,
+                                         buttonSize.height);
+        }
+
+        buttonFrame.origin.x += buttonOffset.x;
+        buttonFrame.origin.y += buttonOffset.y;
+
+        if ([UIScreen mainScreen].scale == 1.f)
+            buttonFrame = CGRectIntegral(buttonFrame);
+
+        buttonWrapperView1.transform = CGAffineTransformIdentity;
+        buttonWrapperView1.frame = buttonFrame;
+
+        buttonWrapperView2.frame = CGRectMake(buttonWrapperView1.frame.size.width/2, buttonWrapperView1.frame.size.height/2, 0.f, 0.f);
+
+        button.frame = CGRectMake(-buttonWrapperView1.frame.size.width/2, -buttonWrapperView1.frame.size.height/2, buttonWrapperView1.frame.size.width, buttonWrapperView1.frame.size.height);
+    }
+
+    // -----
+
+    for (NSUInteger i=0; i<_descriptionsArray.count; i++)
+    {
+        WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[i];
+        LGPlusButton *button = _buttonsArray[i];
+
+        CGSize buttonSize = [button sizeForOrientation:orientation];
+        UIEdgeInsets buttonInsets = [button insetsForOrientation:orientation];
+
+        UIView *descriptionWrapperView = _descriptionWrapperViewsArray[i];
+        LGPlusButtonDescription *description = _descriptionsArray[i];
+
+        description.textAlignment = (_descriptionsPosition == LGPlusButtonDescriptionsPositionLeft ? NSTextAlignmentRight : NSTextAlignmentLeft);
+        [description updateParametersForOrientation:orientation];
+
+        UIEdgeInsets descriptionInsets = [description insetsForOrientation:orientation];
+        CGPoint descriptionOffset = [description offsetForOrientation:orientation];
+
+        if (description.text.length)
+        {
+            if (CGSizeEqualToSize([description sizeForOrientation:orientation], CGSizeZero))
             {
-                if (i == 0 && !CGSizeEqualToSize(_plusButtonSize, CGSizeZero) && self.isShowsPlusButton)
+                CGSize size = [description sizeThatFits:CGSizeMake(descriptionsContentViewFrame.size.width, CGFLOAT_MAX)];
+
+                [description setSize:size forOrientation:orientation];
+            }
+
+            CGSize descriptionSize = [description sizeForOrientation:orientation];
+
+            descriptionWrapperView.transform = CGAffineTransformIdentity;
+            CGRect descriptionWrapperViewFrame = buttonWrapperView1.frame;
+
+            CGRect descriptionFrame = CGRectZero;
+
+            if (_descriptionsPosition == LGPlusButtonDescriptionsPositionLeft)
+            {
+                descriptionWrapperViewFrame.origin.x = descriptionsContentViewFrame.size.width+buttonInsets.left;
+                descriptionWrapperView.frame = descriptionWrapperViewFrame;
+
+                descriptionFrame = CGRectMake(-buttonInsets.left-descriptionInsets.right-descriptionSize.width,
+                                              descriptionWrapperView.frame.size.height/2.f-descriptionSize.height/2.f,
+                                              descriptionSize.width,
+                                              descriptionSize.height);
+            }
+            else
+            {
+                descriptionWrapperViewFrame.origin.x = -buttonSize.width-buttonInsets.right;
+                descriptionWrapperView.frame = descriptionWrapperViewFrame;
+
+                descriptionFrame = CGRectMake(descriptionWrapperView.frame.size.width+buttonInsets.right+descriptionInsets.left,
+                                              descriptionWrapperView.frame.size.height/2.f-descriptionSize.height/2.f,
+                                              descriptionSize.width,
+                                              descriptionSize.height);
+            }
+
+            descriptionFrame.origin.x += descriptionOffset.x;
+            descriptionFrame.origin.y += descriptionOffset.y;
+
+            if ([UIScreen mainScreen].scale == 1.f)
+                descriptionFrame = CGRectIntegral(descriptionFrame);
+
+            description.frame = descriptionFrame;
+
+        }
+        else
+        {
+            descriptionWrapperView.transform = CGAffineTransformIdentity;
+            descriptionWrapperView.frame = CGRectZero;
+
+            description.frame = CGRectZero;
+        }
+    }
+
+    // -----
+
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
+    {
+        WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[i];
+        LGPlusButton *button = _buttonsArray[i];
+
+        if (CGAffineTransformEqualToTransform(buttonWrapperView1.transform, CGAffineTransformIdentity) && button.frame.size.width > 1.f && button.frame.size.height > 1.f)
+        {
+            LGPlusButtonsAppearingAnimationType animationType = NSNotFound;
+
+            if (!self.isShowing)
+            {
+                if (self.isFirstButtonIsPlusButton)
                 {
-                    [buttonsSizeArray addObject:NSStringFromCGSize(_plusButtonSize)];
-                    
-                    width = MAX(width, _plusButtonSize.width);
-                    selfSize.height += _plusButtonSize.height;
+                    if (i == 0)
+                        animationType = _appearingAnimationType;
+                    else
+                    {
+                        if (button.isShowing)
+                            animationType = _appearingAnimationType;
+                        else
+                            animationType = _buttonsAppearingAnimationType;
+                    }
                 }
                 else
                 {
-                    LGPlusButton *button = _buttons[i];
-                    
-                    CGSize buttonSize = [button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
-                    
-                    [buttonsSizeArray addObject:NSStringFromCGSize(buttonSize)];
-                    
-                    width = MAX(width, buttonSize.width);
-                    selfSize.height += buttonSize.height;
-                }
-            }
-            
-            selfSize.width += width;
-        }
-        
-        // -----
-        
-        CGPoint selfOrigin = CGPointZero;
-        if (_position == LGPlusButtonsViewPositionBottomRight)
-        {
-            selfOrigin = CGPointMake(_parentView.frame.size.width-parentInset.right-selfSize.width+parentOffset.x,
-                                     _parentView.frame.size.height-parentInset.bottom-selfSize.height+parentOffset.y);
-        }
-        else if (_position == LGPlusButtonsViewPositionBottomLeft)
-        {
-            selfOrigin = CGPointMake(parentInset.left+parentOffset.x,
-                                     _parentView.frame.size.height-parentInset.bottom-selfSize.height+parentOffset.y);
-        }
-        else if (_position == LGPlusButtonsViewPositionTopRight)
-        {
-            selfOrigin = CGPointMake(_parentView.frame.size.width-parentInset.right-selfSize.width+parentOffset.x,
-                                     parentInset.top+parentOffset.y);
-        }
-        else if (_position == LGPlusButtonsViewPositionTopLeft)
-        {
-            selfOrigin = CGPointMake(parentInset.left+parentOffset.x,
-                                     parentInset.top+parentOffset.y);
-        }
-        selfOrigin.x += _offset.x;
-        selfOrigin.y += _offset.y;
-        
-        CGRect selfFrame = CGRectMake(selfOrigin.x, selfOrigin.y, selfSize.width, selfSize.height);
-        if ([UIScreen mainScreen].scale == 1.f) selfFrame = CGRectIntegral(selfFrame);
-        self.frame = selfFrame;
-        
-        // -----
-        
-        for (NSUInteger i=0; i<_buttons.count; i++)
-        {
-            WrapperView *buttonWrapperView1 = _buttonWrapperViews1[i];
-            WrapperView *buttonWrapperView2 = _buttonWrapperViews2[i];
-            LGPlusButton *button = _buttons[i];
-            
-            CGRect buttonFrame = CGRectZero;
-            CGSize buttonSize = CGSizeZero;
-            
-            if (i == 0 && !CGSizeEqualToSize(_plusButtonSize, CGSizeZero) && self.isShowsPlusButton)
-                buttonSize = _plusButtonSize;
-            else if (!CGSizeEqualToSize(_buttonsSize, CGSizeZero))
-                buttonSize = _buttonsSize;
-            else
-                buttonSize = CGSizeFromString(buttonsSizeArray[i]);
-            
-            if (i == 0)
-            {
-                if (_position == LGPlusButtonsViewPositionBottomRight)
-                {
-                    buttonFrame = CGRectMake(selfFrame.size.width-_contentInset.right-_buttonInset.right-buttonSize.width,
-                                             selfFrame.size.height-_contentInset.bottom-_buttonInset.bottom-buttonSize.height,
-                                             buttonSize.width,
-                                             buttonSize.height);
-                }
-                else if (_position == LGPlusButtonsViewPositionBottomLeft)
-                {
-                    buttonFrame = CGRectMake(_contentInset.left+_buttonInset.left,
-                                             selfFrame.size.height-_contentInset.bottom-_buttonInset.bottom-buttonSize.height,
-                                             buttonSize.width,
-                                             buttonSize.height);
-                }
-                else if (_position == LGPlusButtonsViewPositionTopRight)
-                {
-                    buttonFrame = CGRectMake(selfFrame.size.width-_contentInset.right-_buttonInset.right-buttonSize.width,
-                                             _contentInset.top+_buttonInset.top,
-                                             buttonSize.width,
-                                             buttonSize.height);
-                }
-                else if (_position == LGPlusButtonsViewPositionTopLeft)
-                {
-                    buttonFrame = CGRectMake(_contentInset.left+_buttonInset.left,
-                                             _contentInset.top+_buttonInset.top,
-                                             buttonSize.width,
-                                             buttonSize.height);
+                    if (!button.isShowing)
+                        animationType = _appearingAnimationType;
                 }
             }
             else
             {
-                WrapperView *previousWrapperView1 = _buttonWrapperViews1[i-1];
-                
-                if (_position == LGPlusButtonsViewPositionBottomRight)
+                if (self.isFirstButtonIsPlusButton)
                 {
-                    buttonFrame = CGRectMake(selfFrame.size.width-_contentInset.right-_buttonInset.right-buttonSize.width,
-                                             previousWrapperView1.frame.origin.y-_buttonInset.top-_buttonInset.bottom-buttonSize.height,
-                                             buttonSize.width,
-                                             buttonSize.height);
-                }
-                else if (_position == LGPlusButtonsViewPositionBottomLeft)
-                {
-                    buttonFrame = CGRectMake(_contentInset.left+_buttonInset.left,
-                                             previousWrapperView1.frame.origin.y-_buttonInset.top-_buttonInset.bottom-buttonSize.height,
-                                             buttonSize.width,
-                                             buttonSize.height);
-                }
-                else if (_position == LGPlusButtonsViewPositionTopRight)
-                {
-                    buttonFrame = CGRectMake(selfFrame.size.width-_contentInset.right-_buttonInset.right-buttonSize.width,
-                                             previousWrapperView1.frame.origin.y+previousWrapperView1.frame.size.height+_buttonInset.bottom+_buttonInset.top,
-                                             buttonSize.width,
-                                             buttonSize.height);
-                }
-                else if (_position == LGPlusButtonsViewPositionTopLeft)
-                {
-                    buttonFrame = CGRectMake(_contentInset.left+_buttonInset.left,
-                                             previousWrapperView1.frame.origin.y+previousWrapperView1.frame.size.height+_buttonInset.bottom+_buttonInset.top,
-                                             buttonSize.width,
-                                             buttonSize.height);
+                    if (!button.isShowing)
+                        animationType = _buttonsAppearingAnimationType;
                 }
             }
-            
-            if ([UIScreen mainScreen].scale == 1.f) buttonFrame = CGRectIntegral(buttonFrame);
-            buttonWrapperView1.transform = CGAffineTransformIdentity;
-            buttonWrapperView1.frame = buttonFrame;
-            
-            buttonWrapperView2.frame = CGRectMake(buttonWrapperView1.frame.size.width/2, buttonWrapperView1.frame.size.height/2, 0.f, 0.f);
-            button.frame = CGRectMake(-buttonWrapperView1.frame.size.width/2, -buttonWrapperView1.frame.size.height/2, buttonWrapperView1.frame.size.width, buttonWrapperView1.frame.size.height);
-        }
-        
-        // -----
-        
-        for (NSUInteger i=0; i<_buttons.count; i++)
-        {
-            WrapperView *buttonWrapperView1 = _buttonWrapperViews1[i];
-            LGPlusButton *button = _buttons[i];
-            
-            WrapperView *descriptionWrapperView = _descriptionWrapperViews[i];
-            UILabel *label = _descriptions[i];
-            
-            if (label.text.length)
-            {
-                descriptionWrapperView.transform = CGAffineTransformIdentity;
-                descriptionWrapperView.frame = CGRectMake(buttonWrapperView1.frame.origin.x+button.contentEdgeInsets.left,
-                                                          buttonWrapperView1.frame.origin.y+button.contentEdgeInsets.top,
-                                                          buttonWrapperView1.frame.size.width-button.contentEdgeInsets.left-button.contentEdgeInsets.right,
-                                                          buttonWrapperView1.frame.size.height-button.contentEdgeInsets.top-button.contentEdgeInsets.bottom);
-                CGFloat paddingWidth = 8.f;
-                CGFloat paddingHeight = 4.f;
-                
-                CGSize labelSize = [label sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
-                
-                CGFloat originX;
-                if (_descriptionsPosition == LGPlusButtondescriptionsPositionLeft)
-                    originX = -labelSize.width-_descriptionOffsetX-paddingWidth*2;
-                else
-                    originX = descriptionWrapperView.frame.size.width+_descriptionOffsetX;
-                
-                CGRect labelFrame = CGRectMake(originX,
-                                               descriptionWrapperView.frame.size.height/2-labelSize.height/2-paddingHeight,
-                                               labelSize.width+paddingWidth*2,
-                                               labelSize.height+paddingHeight*2);
-                if ([UIScreen mainScreen].scale == 1.f) labelFrame = CGRectIntegral(labelFrame);
-                label.frame = labelFrame;
-            }
-            else
-            {
-                descriptionWrapperView.transform = CGAffineTransformIdentity;
-                descriptionWrapperView.frame = CGRectZero;
-                
-                label.frame = CGRectZero;
-            }
-        }
-        
-        // -----
-        
-        for (NSUInteger i=0; i<_buttons.count; i++)
-        {
-            WrapperView *buttonWrapperView1 = _buttonWrapperViews1[i];
-            LGPlusButton *button = _buttons[i];
-            
-            if (!button.isShowing && CGAffineTransformEqualToTransform(buttonWrapperView1.transform, CGAffineTransformIdentity) && button.frame.size.width > 1.f && button.frame.size.height > 1.f)
-                [self hideAnimationsWithButtonAtIndex:i animationType:((i == 0 || !self.isShowsPlusButton) ? _appearingAnimationType : _buttonsAppearingAnimationType)];
+
+            if (animationType != NSNotFound)
+                [self hideAnimationsWithButtonAtIndex:i animationType:animationType];
         }
     }
 }
 
 - (void)updatePosition
 {
-    if (self.superview)
-    {
-        UIEdgeInsets parentInset = UIEdgeInsetsZero;
-        CGPoint parentOffset = CGPointZero;
-        
-        if ([_parentView isKindOfClass:[UIScrollView class]])
-        {
-            UIScrollView *parentScrollView = (UIScrollView *)_parentView;
-            
-            parentInset = parentScrollView.contentInset;
-            parentOffset = parentScrollView.contentOffset;
-        }
-        
-        CGPoint selfOrigin = CGPointZero;
-        if (_position == LGPlusButtonsViewPositionBottomRight)
-        {
-            selfOrigin = CGPointMake(_parentView.frame.size.width-parentInset.right-self.frame.size.width+parentOffset.x,
-                                     _parentView.frame.size.height-parentInset.bottom-self.frame.size.height+parentOffset.y);
-        }
-        else if (_position == LGPlusButtonsViewPositionBottomLeft)
-        {
-            selfOrigin = CGPointMake(parentInset.left+parentOffset.x,
-                                     _parentView.frame.size.height-parentInset.bottom-self.frame.size.height+parentOffset.y);
-        }
-        else if (_position == LGPlusButtonsViewPositionTopRight)
-        {
-            selfOrigin = CGPointMake(_parentView.frame.size.width-parentInset.right-self.frame.size.width+parentOffset.x,
-                                     parentInset.top+parentOffset.y);
-        }
-        else if (_position == LGPlusButtonsViewPositionTopLeft)
-        {
-            selfOrigin = CGPointMake(parentInset.left+parentOffset.x,
-                                     parentInset.top+parentOffset.y);
-        }
-        selfOrigin.x += _offset.x;
-        selfOrigin.y += _offset.y;
-        
-        CGRect selfFrame = CGRectMake(selfOrigin.x, selfOrigin.y, self.frame.size.width, self.frame.size.height);
-        if ([UIScreen mainScreen].scale == 1.f) selfFrame = CGRectIntegral(selfFrame);
-        self.center = CGPointMake(selfFrame.origin.x+selfFrame.size.width/2, selfFrame.origin.y+selfFrame.size.height/2);
-    }
+    UIScrollView *parentScrollView = (UIScrollView *)self.superview;
+
+    CGPoint parentOffset = parentScrollView.contentOffset;
+
+    self.center = CGPointMake(parentOffset.x+parentScrollView.frame.size.width/2.f, parentOffset.y+parentScrollView.frame.size.height/2);
 }
 
 #pragma mark - Actions
 
-- (void)plusButtonAction:(LGPlusButton *)button
+- (void)tapGesture:(UITapGestureRecognizer *)gestureRecognizer
 {
-    if (_plusButton.isSelected)
+    if (self.isFirstButtonIsPlusButton)
         [self hideButtonsAnimated:YES completionHandler:nil];
     else
-        [self showButtonsAnimated:YES completionHandler:nil];
-    
-    if (_plusButtonActionHandler) _plusButtonActionHandler(self);
-    
-    if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewPlusButtonPressed:)])
-        [_delegate plusButtonsViewPlusButtonPressed:self];
+        [self hideAnimated:YES completionHandler:nil];
 }
 
 - (void)buttonAction:(LGPlusButton *)button
 {
-    NSUInteger index = [_buttons indexOfObject:button];
-    
-    UILabel *descriptionLabel = _descriptions[index];
-    
-    if (_actionHandler) _actionHandler(self, button.titleLabel.text, descriptionLabel.text, button.tag);
-    
+    NSUInteger index = button.tag;
+
+    LGPlusButtonDescription *description = _descriptionsArray[index];
+
+    if (self.isFirstButtonIsPlusButton && index == 0)
+    {
+        if (button.isSelected)
+            [self hideButtonsAnimated:YES completionHandler:nil];
+        else
+            [self showButtonsAnimated:YES completionHandler:nil];
+    }
+
+    // -----
+
+    if (_actionHandler) _actionHandler(self, button.titleLabel.text, description.text, button.tag);
+
     if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsView:buttonPressedWithTitle:description:index:)])
-        [_delegate plusButtonsView:self buttonPressedWithTitle:button.titleLabel.text description:descriptionLabel.text index:button.tag];
+        [_delegate plusButtonsView:self buttonPressedWithTitle:button.titleLabel.text description:description.text index:button.tag];
+
+    NSMutableDictionary *userInfo = [NSMutableDictionary new];
+    if (button.titleLabel.text)
+        [userInfo setObject:button.titleLabel.text forKey:@"title"];
+    if (description.text)
+        [userInfo setObject:description.text forKey:@"description"];
+    if (button.tag != NSNotFound)
+        [userInfo setObject:[NSNumber numberWithInteger:button.tag] forKey:@"index"];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewActionNotification object:self userInfo:userInfo];
 }
 
 #pragma mark - Animations
@@ -990,49 +1297,61 @@ LGPlusButtonDescriptionsPosition;
     if (!self.isShowing)
     {
         _showing = YES;
-        _plusButton.showing = YES;
-        
         self.hidden = NO;
-        
-        NSTimeInterval delay = 0.03;
-        
-        if (self.isShowsPlusButton)
+
+        // -----
+
+        if (_willShowHandler) _willShowHandler(self);
+
+        if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewWillShow:)])
+            [_delegate plusButtonsViewWillShow:self];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewWillShowNotification object:self userInfo:nil];
+
+        // -----
+
+        NSTimeInterval delay = _appearingAnimationSpeed/10.f;
+
+        for (NSInteger i=0; i<_buttonsArray.count; i++)
         {
-            for (NSInteger i=0; i<_buttons.count; i++)
+            LGPlusButton *button = _buttonsArray[i];
+
+            if (!self.isFirstButtonIsPlusButton ||
+                (self.isFirstButtonIsPlusButton && (i == 0  || (i > 0 && button.isShowing))))
             {
-                LGPlusButton *button = _buttons[i];
-                
-                if (i == 0  || (i > 0 && button.isShowing))
-                {
-                    [self showButtonAtIndex:i
-                              animationType:_appearingAnimationType
-                                      delay:delay*i
-                                   animated:animated
-                          completionHandler:^(BOOL result)
-                     {
-                         if (completionHandler) completionHandler();
-                     }];
-                }
-            }
-        }
-        else
-        {
-            for (NSInteger i=0; i<_buttons.count; i++)
-            {
-                LGPlusButton *button = _buttons[i];
-                
-                button.showing = YES;
-                
+                if (!self.isFirstButtonIsPlusButton ||
+                    (self.isFirstButtonIsPlusButton && i == 0))
+                    button.showing = YES;
+
+                __block NSUInteger index = i;
+
                 [self showButtonAtIndex:i
                           animationType:_appearingAnimationType
                                   delay:delay*i
+                         animationSpeed:_appearingAnimationSpeed
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (completionHandler) completionHandler();
+                     if (result && index == _buttonsArray.count-1)
+                     {
+                         if (completionHandler) completionHandler();
+
+                         // -----
+
+                         if (_didShowHandler) _didShowHandler(self);
+
+                         if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewDidShow:)])
+                             [_delegate plusButtonsViewDidShow:self];
+
+                         [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewDidShowNotification object:self userInfo:nil];
+                     }
                  }];
             }
         }
+
+        if (!self.isFirstButtonIsPlusButton)
+            [self showCoverViewAnimated:animated
+                          animationType:_appearingAnimationType];
     }
 }
 
@@ -1040,62 +1359,63 @@ LGPlusButtonDescriptionsPosition;
 {
     if (self.isShowing)
     {
-		if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewShouldHide:)]) {
-			if (![_delegate plusButtonsViewShouldHide:self])
-				return;
-		}
         _showing = NO;
-        _plusButton.showing = NO;
-        
-        NSTimeInterval delay = 0.03;
-        
-        if (self.isShowsPlusButton)
+
+        // -----
+
+        if (_willHideHandler) _willHideHandler(self);
+
+        if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewWillHide:)])
+            [_delegate plusButtonsViewWillHide:self];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewWillHideNotification object:self userInfo:nil];
+
+        // -----
+
+        NSTimeInterval delay = _appearingAnimationSpeed/10.f;
+
+        for (NSInteger i=0; i<_buttonsArray.count; i++)
         {
-            for (NSInteger i=0; i<_buttons.count; i++)
+            LGPlusButton *button = _buttonsArray[i];
+
+            if (!self.isFirstButtonIsPlusButton ||
+                (self.isFirstButtonIsPlusButton && (i == 0  || (i > 0 && button.isShowing))))
             {
-                LGPlusButton *button = _buttons[i];
-                
-                if (i == 0 || (i > 0 && button.isShowing))
-                {
-                    __block NSUInteger index = i;
-                    
-                    [self hideButtonAtIndex:i
-                              animationType:_appearingAnimationType
-                                      delay:delay*i
-                                   animated:animated
-                          completionHandler:^(BOOL result)
-                     {
-                         if (result && index == _buttons.count-1)
-                             self.hidden = YES;
-                         
-                         if (completionHandler && result) completionHandler();
-                     }];
-                }
-            }
-        }
-        else
-        {
-            for (NSInteger i=0; i<_buttons.count; i++)
-            {
-                LGPlusButton *button = _buttons[i];
-                
-                button.showing = NO;
-                
+                if (!self.isFirstButtonIsPlusButton ||
+                    (self.isFirstButtonIsPlusButton && i == 0))
+                    button.showing = NO;
+
                 __block NSUInteger index = i;
-                
+
                 [self hideButtonAtIndex:i
                           animationType:_appearingAnimationType
                                   delay:delay*i
+                         animationSpeed:_appearingAnimationSpeed
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (result && index == _buttons.count-1)
+                     if (result && index == _buttonsArray.count-1)
+                     {
                          self.hidden = YES;
-                     
-                     if (completionHandler && result) completionHandler();
+
+                         if (completionHandler) completionHandler();
+
+                         // -----
+
+                         if (_didHideHandler) _didHideHandler(self);
+
+                         if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewDidHide:)])
+                             [_delegate plusButtonsViewDidHide:self];
+
+                         [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewDidHideNotification object:self userInfo:nil];
+                     }
                  }];
             }
         }
+
+        if (!self.isFirstButtonIsPlusButton)
+            [self hideCoverViewAnimated:animated
+                          animationType:_appearingAnimationType];
     }
 }
 
@@ -1103,76 +1423,204 @@ LGPlusButtonDescriptionsPosition;
 
 - (void)showButtonsAnimated:(BOOL)animated completionHandler:(void(^)())completionHandler
 {
-    if (self.isShowsPlusButton)
+    if (self.isFirstButtonIsPlusButton)
     {
-        _plusButton.selected = YES;
-        
-        [self selectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
-        
-        NSTimeInterval delay = 0.03;
-        
-        for (NSInteger i=1; i<_buttons.count; i++)
+        LGPlusButton *plusButton = _buttonsArray[0];
+        plusButton.selected = YES;
+
+        [self selectPlusButtonViewWithAnimationType:_plusButtonAnimationType
+                                           animated:animated
+                                  completionHandler:nil];
+
+        // -----
+
+        if (_willShowButtonsHandler) _willShowButtonsHandler(self);
+
+        if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewWillShowButtons:)])
+            [_delegate plusButtonsViewWillShowButtons:self];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewWillShowButtonsNotification object:self userInfo:nil];
+
+        // -----
+
+        NSTimeInterval delay = _buttonsAppearingAnimationSpeed/10.f;
+
+        for (NSInteger i=1; i<_buttonsArray.count; i++)
         {
-            LGPlusButton *button = _buttons[i];
-            
+            LGPlusButton *button = _buttonsArray[i];
+
             if (!button.isShowing)
             {
                 button.showing = YES;
-                
-                if (_plusButton.isShowing)
-                {
-                    [self showButtonAtIndex:i
-                              animationType:_buttonsAppearingAnimationType
-                                      delay:delay*(i-1)
-                                   animated:animated
-                          completionHandler:^(BOOL result)
+
+                __block NSUInteger index = i;
+
+                [self showButtonAtIndex:i
+                          animationType:_buttonsAppearingAnimationType
+                                  delay:delay*(i-1)
+                         animationSpeed:_buttonsAppearingAnimationSpeed
+                               animated:animated
+                      completionHandler:^(BOOL result)
+                 {
+                     if (result && index == _buttonsArray.count)
                      {
-                         if (completionHandler && result) completionHandler();
-                     }];
-                }
-                else
-                {
-                    [self hideButtonAtIndex:i
-                              animationType:_appearingAnimationType
-                                      delay:delay*(i-1)
-                                   animated:animated
-                          completionHandler:^(BOOL result)
-                     {
-                         if (completionHandler && result) completionHandler();
-                     }];
-                }
+                         if (completionHandler) completionHandler();
+
+                         // -----
+
+                         if (_didShowButtonsHandler) _didShowButtonsHandler(self);
+
+                         if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewDidShowButtons:)])
+                             [_delegate plusButtonsViewDidShowButtons:self];
+
+                         [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewDidShowButtonsNotification object:self userInfo:nil];
+                     }
+                 }];
             }
         }
+
+        [self showCoverViewAnimated:animated
+                      animationType:_buttonsAppearingAnimationType];
     }
 }
 
 - (void)hideButtonsAnimated:(BOOL)animated completionHandler:(void(^)())completionHandler
 {
-    if (self.isShowsPlusButton)
+    if (self.isFirstButtonIsPlusButton)
     {
-        _plusButton.selected = NO;
-        
-        [self deselectPlusButtonViewWithAnimationType:_plusButtonAnimationType animated:YES completionHandler:nil];
-        
-        NSTimeInterval delay = 0.03;
-        
-        for (NSInteger i=1; i<_buttons.count; i++)
+        LGPlusButton *plusButton = _buttonsArray[0];
+        plusButton.selected = NO;
+
+        [self deselectPlusButtonViewWithAnimationType:_plusButtonAnimationType
+                                             animated:animated
+                                    completionHandler:nil];
+
+        // -----
+
+        if (_willHideButtonsHandler) _willHideButtonsHandler(self);
+
+        if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewWillHideButtons:)])
+            [_delegate plusButtonsViewWillHideButtons:self];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewWillHideButtonsNotification object:self userInfo:nil];
+
+        // -----
+
+        NSTimeInterval delay = _buttonsAppearingAnimationSpeed/10.f;
+
+        for (NSInteger i=1; i<_buttonsArray.count; i++)
         {
-            LGPlusButton *button = _buttons[i];
-            
+            LGPlusButton *button = _buttonsArray[i];
+
             if (button.isShowing)
             {
                 button.showing = NO;
-                
+
+                __block NSUInteger index = i;
+
                 [self hideButtonAtIndex:i
                           animationType:_buttonsAppearingAnimationType
                                   delay:delay*(i-1)
+                         animationSpeed:_buttonsAppearingAnimationSpeed
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (completionHandler && result) completionHandler();
+                     if (result && index == _buttonsArray.count)
+                     {
+                         if (completionHandler) completionHandler();
+
+                         // -----
+
+                         if (_didHideButtonsHandler) _didHideButtonsHandler(self);
+
+                         if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsViewDidHideButtons:)])
+                             [_delegate plusButtonsViewDidHideButtons:self];
+
+                         [[NSNotificationCenter defaultCenter] postNotificationName:kLGPlusButtonsViewDidHideButtonsNotification object:self userInfo:nil];
+                     }
                  }];
             }
+        }
+
+        [self hideCoverViewAnimated:animated
+                      animationType:_buttonsAppearingAnimationType];
+    }
+}
+
+#pragma mark - Cover View Animations
+
+- (void)showCoverViewAnimated:(BOOL)animated
+                animationType:(LGPlusButtonsAppearingAnimationType)type
+{
+    if (_coverColor && ![_coverColor isEqual:[UIColor clearColor]])
+    {
+        _coverView.hidden = NO;
+
+        if ([self.superview isKindOfClass:[UIScrollView class]])
+            [(UIScrollView *)self.superview setScrollEnabled:NO];
+
+        _coverView.alpha = [(CALayer *)_coverView.layer.presentationLayer opacity];
+        [_coverView.layer removeAllAnimations];
+
+        if (!animated || type == LGPlusButtonsAppearingAnimationTypeNone)
+        {
+            _coverView.alpha = 1.f;
+        }
+        else
+        {
+            NSTimeInterval animationSpeed = (self.isFirstButtonIsPlusButton ? _appearingAnimationSpeed : _buttonsAppearingAnimationSpeed);
+            CGFloat dif = 1.f-_coverView.alpha;
+            NSTimeInterval duration = animationSpeed*dif;
+
+            [LGPlusButtonsView animateStandardWithDuration:duration
+                                                     delay:0.f
+                                                animations:^(void)
+             {
+                 _coverView.alpha = 1.f;
+             }
+                                                completion:nil];
+        }
+    }
+}
+
+- (void)hideCoverViewAnimated:(BOOL)animated
+                animationType:(LGPlusButtonsAppearingAnimationType)type
+{
+    if (_coverColor && ![_coverColor isEqual:[UIColor clearColor]])
+    {
+        _coverView.alpha = [(CALayer *)_coverView.layer.presentationLayer opacity];
+        [_coverView.layer removeAllAnimations];
+
+        if (!animated || type == LGPlusButtonsAppearingAnimationTypeNone)
+        {
+            _coverView.alpha = 0.f;
+            _coverView.hidden = YES;
+
+            if ([self.superview isKindOfClass:[UIScrollView class]])
+                [(UIScrollView *)self.superview setScrollEnabled:YES];
+        }
+        else
+        {
+            NSTimeInterval animationSpeed = (self.isFirstButtonIsPlusButton ? _appearingAnimationSpeed : _buttonsAppearingAnimationSpeed);
+            CGFloat dif = _coverView.alpha-0.f;
+            NSTimeInterval duration = animationSpeed*dif;
+
+            [LGPlusButtonsView animateStandardWithDuration:duration
+                                                     delay:0.f
+                                                animations:^(void)
+             {
+                 _coverView.alpha = 0.f;
+             }
+                                                completion:^(BOOL finished)
+             {
+                 if (finished)
+                 {
+                     _coverView.hidden = YES;
+
+                     if ([self.superview isKindOfClass:[UIScrollView class]])
+                         [(UIScrollView *)self.superview setScrollEnabled:YES];
+                 }
+             }];
         }
     }
 }
@@ -1182,21 +1630,22 @@ LGPlusButtonDescriptionsPosition;
 - (void)showButtonAtIndex:(NSUInteger)index
             animationType:(LGPlusButtonsAppearingAnimationType)type
                     delay:(NSTimeInterval)delay
+           animationSpeed:(NSTimeInterval)animationSpeed
                  animated:(BOOL)animated
         completionHandler:(void(^)(BOOL result))completionHandler
 {
-    WrapperView *buttonWrapperView1 = _buttonWrapperViews1[index];
-    WrapperView *descriptionWrapperView = _descriptionWrapperViews[index];
-    
+    WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[index];
+    WrapperView *descriptionWrapperView = _descriptionWrapperViewsArray[index];
+
     // -----
-    
+
     CGAffineTransform transform = CGAffineTransformIdentity;
-    
+
     if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop)
     {
         CGFloat scaleX = [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.scale.x"] floatValue];
         CGFloat scaleY = [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.scale.y"] floatValue];
-        
+
         if (scaleX && scaleY)
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(scaleX, scaleY));
     }
@@ -1205,31 +1654,32 @@ LGPlusButtonDescriptionsPosition;
         transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation([[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.x"] floatValue],
                                                                                         [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.y"] floatValue]));
     }
-    
+
     buttonWrapperView1.alpha = [(CALayer *)buttonWrapperView1.layer.presentationLayer opacity];
     buttonWrapperView1.transform = transform;
-    
+
     descriptionWrapperView.alpha = buttonWrapperView1.alpha;
     descriptionWrapperView.transform = buttonWrapperView1.transform;
-    
+
     // -----
-    
+
     [buttonWrapperView1.layer removeAllAnimations];
     [descriptionWrapperView.layer removeAllAnimations];
-    
+
     // -----
-    
+
     if (!animated || type == LGPlusButtonsAppearingAnimationTypeNone)
     {
         [self showAnimationsWithButtonAtIndex:index];
-        
+
         if (completionHandler) completionHandler(YES);
     }
     else
     {
         CGFloat dif = 1.f-buttonWrapperView1.alpha;
-        
-        [LGPlusButtonsView animateStandardWithDuration:0.3*dif
+        NSTimeInterval duration = animationSpeed*dif;
+
+        [LGPlusButtonsView animateStandardWithDuration:duration
                                                  delay:delay
                                             animations:^(void)
          {
@@ -1244,16 +1694,16 @@ LGPlusButtonDescriptionsPosition;
 
 - (void)showAnimationsWithButtonAtIndex:(NSUInteger)index
 {
-    WrapperView *buttonWrapperView1 = _buttonWrapperViews1[index];
-    WrapperView *descriptionWrapperView = _descriptionWrapperViews[index];
-    
+    WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[index];
+    WrapperView *descriptionWrapperView = _descriptionWrapperViewsArray[index];
+
     // -----
-    
+
     CGAffineTransform transform = CGAffineTransformIdentity;
-    
+
     buttonWrapperView1.alpha = 1.f;
     buttonWrapperView1.transform = transform;
-    
+
     descriptionWrapperView.alpha = buttonWrapperView1.alpha;
     descriptionWrapperView.transform = buttonWrapperView1.transform;
 }
@@ -1261,21 +1711,22 @@ LGPlusButtonDescriptionsPosition;
 - (void)hideButtonAtIndex:(NSUInteger)index
             animationType:(LGPlusButtonsAppearingAnimationType)type
                     delay:(NSTimeInterval)delay
+           animationSpeed:(NSTimeInterval)animationSpeed
                  animated:(BOOL)animated
         completionHandler:(void(^)(BOOL result))completionHandler
 {
-    WrapperView *buttonWrapperView1 = _buttonWrapperViews1[index];
-    WrapperView *descriptionWrapperView = _descriptionWrapperViews[index];
-    
+    WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[index];
+    WrapperView *descriptionWrapperView = _descriptionWrapperViewsArray[index];
+
     // -----
-    
+
     CGAffineTransform transform = CGAffineTransformIdentity;
-    
+
     if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop)
     {
         CGFloat scaleX = [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.scale.x"] floatValue];
         CGFloat scaleY = [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.scale.y"] floatValue];
-        
+
         if (scaleX && scaleY)
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(scaleX, scaleY));
     }
@@ -1284,25 +1735,25 @@ LGPlusButtonDescriptionsPosition;
         transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation([[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.x"] floatValue],
                                                                                         [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.y"] floatValue]));
     }
-    
+
     buttonWrapperView1.alpha = [(CALayer *)buttonWrapperView1.layer.presentationLayer opacity];
     buttonWrapperView1.transform = transform;
-    
+
     descriptionWrapperView.alpha = buttonWrapperView1.alpha;
     descriptionWrapperView.transform = buttonWrapperView1.transform;
-    
+
     // -----
-    
+
     [buttonWrapperView1.layer removeAllAnimations];
     [descriptionWrapperView.layer removeAllAnimations];
-    
+
     // -----
-    
+
     if (type == LGPlusButtonsAppearingAnimationTypeNone)
     {
         [self hideAnimationsWithButtonAtIndex:index
                                 animationType:type];
-        
+
         if (completionHandler) completionHandler(YES);
     }
     else
@@ -1310,8 +1761,9 @@ LGPlusButtonDescriptionsPosition;
         if (animated)
         {
             CGFloat dif = buttonWrapperView1.alpha-0.f;
-            
-            [UIView animateWithDuration:0.3*0.66*dif
+            NSTimeInterval duration = animationSpeed*dif*_hideAnimationCoef;
+
+            [UIView animateWithDuration:duration
                                   delay:delay
                                 options:0
                              animations:^(void)
@@ -1328,7 +1780,7 @@ LGPlusButtonDescriptionsPosition;
         {
             [self hideAnimationsWithButtonAtIndex:index
                                     animationType:type];
-            
+
             if (completionHandler) completionHandler(YES);
         }
     }
@@ -1337,37 +1789,43 @@ LGPlusButtonDescriptionsPosition;
 - (void)hideAnimationsWithButtonAtIndex:(NSUInteger)index
                           animationType:(LGPlusButtonsAppearingAnimationType)type
 {
-    WrapperView *buttonWrapperView1 = _buttonWrapperViews1[index];
-    WrapperView *descriptionWrapperView = _descriptionWrapperViews[index];
-    
+    WrapperView *buttonWrapperView1 = _buttonWrapperViewsArray1[index];
+    WrapperView *descriptionWrapperView = _descriptionWrapperViewsArray[index];
+
     // -----
-    
+
     CGAffineTransform transform = CGAffineTransformIdentity;
-    
+
     if (type == LGPlusButtonsAppearingAnimationTypeNone)
     {
-        //
+        // no transform
     }
     else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolve)
     {
-        //
+        // no transform
     }
     else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideHorizontal)
     {
-        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(buttonWrapperView1.frame.size.width, 0.f));
+        if (_position == LGPlusButtonsViewPositionRightTop || _position == LGPlusButtonsViewPositionRightBottom)
+            transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(buttonWrapperView1.frame.size.width, 0.f));
+        else
+            transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(-buttonWrapperView1.frame.size.width, 0.f));
     }
     else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical)
     {
-        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, buttonWrapperView1.frame.size.height));
+        if (_position == LGPlusButtonsViewPositionBottomLeft || _position == LGPlusButtonsViewPositionBottomRight)
+            transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, buttonWrapperView1.frame.size.height));
+        else
+            transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, -buttonWrapperView1.frame.size.height));
     }
     else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop)
     {
         transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(0.5, 0.5));
     }
-    
+
     buttonWrapperView1.alpha = 0.f;
     buttonWrapperView1.transform = transform;
-    
+
     descriptionWrapperView.alpha = buttonWrapperView1.alpha;
     descriptionWrapperView.transform = buttonWrapperView1.transform;
 }
@@ -1376,15 +1834,15 @@ LGPlusButtonDescriptionsPosition;
 
 - (void)selectPlusButtonViewWithAnimationType:(LGPlusButtonAnimationType)type animated:(BOOL)animated completionHandler:(void(^)(BOOL result))completionHandler
 {
-    WrapperView *plusButtonWrapperView2 = _buttonWrapperViews2[0];
-    
+    WrapperView *plusButtonWrapperView2 = _buttonWrapperViewsArray2[0];
+
     // -----
-    
+
     if (type == LGPlusButtonAnimationTypeCrossDissolve)
     {
         if (animated)
             [UIView transitionWithView:plusButtonWrapperView2
-                              duration:0.2
+                              duration:_buttonsAppearingAnimationSpeed
                                options:UIViewAnimationOptionTransitionCrossDissolve
                             animations:nil
                             completion:completionHandler];
@@ -1393,10 +1851,10 @@ LGPlusButtonDescriptionsPosition;
     {
         CGAffineTransform transform = CGAffineTransformIdentity;
         transform = CGAffineTransformConcat(transform, CGAffineTransformMakeRotation(kLGPlusButtonsViewDegreesToRadians(45)));
-        
+
         if (animated)
         {
-            [UIView animateWithDuration:0.2
+            [UIView animateWithDuration:_buttonsAppearingAnimationSpeed
                              animations:^(void)
              {
                  plusButtonWrapperView2.transform = transform;
@@ -1405,7 +1863,7 @@ LGPlusButtonDescriptionsPosition;
         else
         {
             plusButtonWrapperView2.transform = transform;
-            
+
             if (completionHandler) completionHandler(YES);
         }
     }
@@ -1413,15 +1871,15 @@ LGPlusButtonDescriptionsPosition;
 
 - (void)deselectPlusButtonViewWithAnimationType:(LGPlusButtonAnimationType)type animated:(BOOL)animated completionHandler:(void(^)(BOOL result))completionHandler
 {
-    WrapperView *plusButtonWrapperView2 = _buttonWrapperViews2[0];
-    
+    WrapperView *plusButtonWrapperView2 = _buttonWrapperViewsArray2[0];
+
     // -----
-    
+
     if (type == LGPlusButtonAnimationTypeCrossDissolve)
     {
         if (animated)
             [UIView transitionWithView:plusButtonWrapperView2
-                              duration:0.2
+                              duration:_buttonsAppearingAnimationSpeed
                                options:UIViewAnimationOptionTransitionCrossDissolve
                             animations:nil
                             completion:completionHandler];
@@ -1430,7 +1888,7 @@ LGPlusButtonDescriptionsPosition;
     {
         if (animated)
         {
-            [UIView animateWithDuration:0.2
+            [UIView animateWithDuration:_buttonsAppearingAnimationSpeed
                              animations:^(void)
              {
                  plusButtonWrapperView2.transform = CGAffineTransformIdentity;
@@ -1439,7 +1897,7 @@ LGPlusButtonDescriptionsPosition;
         else
         {
             plusButtonWrapperView2.transform = CGAffineTransformIdentity;
-            
+
             if (completionHandler) completionHandler(YES);
         }
     }
@@ -1447,34 +1905,58 @@ LGPlusButtonDescriptionsPosition;
 
 #pragma mark - Observers
 
-- (void)addObservers
+- (void)addObservers:(UIView *)view
 {
-    if (!self.isObserversAdded && _parentView)
+    if (!self.isObserversAdded && view)
     {
         _observersAdded = YES;
-        
-        [_parentView addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
-        
-        if ([_parentView isKindOfClass:[UIScrollView class]])
+
+        [view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
+
+        if ([view isKindOfClass:[UIScrollView class]])
         {
-            [_parentView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-            [_parentView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+            [view addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
+            [view addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+            [view addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
+        }
+
+        if (_observedScrollView)
+        {
+            NSAssert([_observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
+
+            _observersForScrollViewAdded = YES;
+
+            [_observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
+            [_observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+            [_observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
         }
     }
 }
 
-- (void)removeObservers
+- (void)removeObservers:(UIView *)view
 {
-    if (self.isObserversAdded && _parentView)
+    if (self.isObserversAdded && view)
     {
         _observersAdded = NO;
-        
-        [_parentView removeObserver:self forKeyPath:@"frame"];
-        
-        if ([_parentView isKindOfClass:[UIScrollView class]])
+
+        [view removeObserver:self forKeyPath:@"frame"];
+
+        if ([view isKindOfClass:[UIScrollView class]])
         {
-            [_parentView removeObserver:self forKeyPath:@"contentInset"];
-            [_parentView removeObserver:self forKeyPath:@"contentOffset"];
+            [view removeObserver:self forKeyPath:@"contentInset"];
+            [view removeObserver:self forKeyPath:@"contentOffset"];
+            [view removeObserver:self forKeyPath:@"contentSize"];
+        }
+
+        if (self.isObserversForScrollViewAdded)
+        {
+            NSAssert([_observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
+
+            _observersForScrollViewAdded = NO;
+
+            [_observedScrollView removeObserver:self forKeyPath:@"contentInset"];
+            [_observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
+            [_observedScrollView removeObserver:self forKeyPath:@"contentSize"];
         }
     }
 }
@@ -1482,50 +1964,88 @@ LGPlusButtonDescriptionsPosition;
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if ([keyPath isEqualToString:@"frame"])
-        [self layoutInvalidate];
+        [self setNeedsLayout];
     else if ([keyPath isEqualToString:@"contentInset"])
-        [self layoutInvalidate];
+        [self setNeedsLayout];
     else if ([keyPath isEqualToString:@"contentOffset"])
     {
-        [self updatePosition];
-        
-        if (!self.isAlwaysVisible)
+        if ([object isEqual:self.superview])
+            [self updatePosition];
+
+        if (!self.isShowHideOnScroll ||
+            (_observedScrollView && ![object isEqual:_observedScrollView]) ||
+            (!_observedScrollView && ![object isEqual:self.superview]))
+            return;
+
+        UIScrollView *scrollView = (UIScrollView *)object;
+
+        if (self.isDisableShowHideOnScrollIfContentSizeLessThenFrame &&
+            scrollView.contentSize.height <= scrollView.frame.size.height-(scrollView.contentInset.top+scrollView.contentInset.bottom))
+            return;
+
+        CGPoint newOffset = [[change valueForKey:NSKeyValueChangeNewKey] CGPointValue];
+
+        CGFloat offsetY = newOffset.y;
+        CGFloat tempDiff = self.tempOffsetY - offsetY;
+
+        if ((self.tempDiff > 0.f && tempDiff < 0.f) || (self.tempDiff < 0.f && tempDiff > 0.f) || self.tempDiff == 0.f)
         {
-            UIScrollView *scrollView = (UIScrollView *)_parentView;
-            
-            CGPoint newOffset = [[change valueForKey:NSKeyValueChangeNewKey] CGPointValue];
-            
-            CGFloat offsetY = newOffset.y;
-            CGFloat tempDiff = self.tempOffsetY - offsetY;
-            
-            if ((self.tempDiff > 0.f && tempDiff < 0.f) || (self.tempDiff < 0.f && tempDiff > 0.f) || self.tempDiff == 0.f)
-            {
-                self.offsetY = offsetY;
-                self.tempDiff = tempDiff;
-            }
-            else
-            {
-                CGFloat diff = self.offsetY - offsetY;
-                
-                if (scrollView.isTracking && scrollView.isDragging && (diff > _scrollSensitivity || diff < -_scrollSensitivity))
-                {
-                    if (self.offsetY > offsetY)
-                        [self showAnimated:YES completionHandler:nil];
-                    else
-                        [self hideAnimated:YES completionHandler:^(void)
-                         {
-                             if (self.isHideButtonsOnScroll)
-                                 [self hideButtonsAnimated:NO completionHandler:nil];
-                         }];
-                }
-            }
-            
-            if (offsetY >= -scrollView.contentInset.top &&
-                offsetY < scrollView.contentSize.height-scrollView.frame.size.height+scrollView.contentInset.bottom)
-                self.tempOffsetY = offsetY;
+            self.offsetY = offsetY;
+            self.tempDiff = tempDiff;
         }
+        else
+        {
+            CGFloat diff = self.offsetY - offsetY;
+
+            if (scrollView.isTracking && scrollView.isDragging && (diff > _scrollSensitivity || diff < -_scrollSensitivity))
+            {
+                if (self.offsetY > offsetY)
+                    [self showAnimated:YES completionHandler:nil];
+                else
+                    [self hideAnimated:YES completionHandler:^(void)
+                     {
+                         if (self.isHideButtonsOnScroll)
+                             [self hideButtonsAnimated:NO completionHandler:nil];
+                     }];
+            }
+        }
+
+        if (offsetY >= -scrollView.contentInset.top &&
+            offsetY < scrollView.contentSize.height-scrollView.frame.size.height+scrollView.contentInset.bottom)
+            self.tempOffsetY = offsetY;
+    }
+    else if ([keyPath isEqualToString:@"contentSize"])
+    {
+        //
     }
     else [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
+#pragma mark -
+
+- (void)setObservedScrollView:(UIScrollView *)observedScrollView
+{
+    if (observedScrollView)
+        NSAssert([observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
+    
+    if (self.isObserversForScrollViewAdded)
+    {
+        [_observedScrollView removeObserver:self forKeyPath:@"contentInset"];
+        [_observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
+        [_observedScrollView removeObserver:self forKeyPath:@"contentSize"];
+    }
+    
+    if (observedScrollView)
+    {
+        _observersForScrollViewAdded = YES;
+        
+        [observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
+        [observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+        [observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
+    }
+    else _observersForScrollViewAdded = NO;
+    
+    _observedScrollView = observedScrollView;
 }
 
 #pragma mark - Support

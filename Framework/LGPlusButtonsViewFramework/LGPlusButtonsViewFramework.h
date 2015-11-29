@@ -18,3 +18,5 @@ FOUNDATION_EXPORT const unsigned char LGPlusButtonsViewFrameworkVersionString[];
 
 #import <LGPlusButtonsViewFramework/LGPlusButtonsView.h>
 #import <LGPlusButtonsViewFramework/LGPlusButton.h>
+#import <LGPlusButtonsViewFramework/LGPlusButtonDescription.h>
+#import <LGPlusButtonsViewFramework/LGPlusButtonsViewShared.h>

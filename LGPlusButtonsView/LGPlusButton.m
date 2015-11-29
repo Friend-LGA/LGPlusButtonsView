@@ -28,11 +28,25 @@
 //
 
 #import "LGPlusButton.h"
+#import "LGPlusButtonsViewShared.h"
 
-// Do not forget about "protected"
 @interface LGPlusButton ()
 
-@property (assign, nonatomic, getter=isShowing) BOOL showing;
+@property (strong, nonatomic) NSMutableDictionary *imagesDictionary;
+@property (strong, nonatomic) NSMutableDictionary *titleFontsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *insetsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *offsetsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *sizesDictionary;
+@property (strong, nonatomic) NSMutableDictionary *contentEdgeInsetsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *titleOffsetsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *imageOffsetsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *backgroundColorsDictionary;
+@property (strong, nonatomic) NSMutableDictionary *layerCornerRadiusDictionary;
+
+@property (assign, nonatomic) UIEdgeInsets insets;
+@property (assign, nonatomic) CGSize size;
+@property (assign, nonatomic) CGPoint titleOffset;
+@property (assign, nonatomic) CGPoint imageOffset;
 
 @end
 
@@ -45,11 +59,25 @@
     {
         self.backgroundColor = [UIColor clearColor];
         self.layer.anchorPoint = CGPointMake(0.5, 0.5);
-        
-        self.imageView.contentMode = UIViewContentModeScaleAspectFit;
-        
-        _titleOffset = CGPointZero;
-        _imageOffset = CGPointZero;
+        self.layer.masksToBounds = YES;
+        self.imageView.contentMode = UIViewContentModeCenter;
+
+        // -----
+
+        _imagesDictionary = [NSMutableDictionary new];
+        _titleFontsDictionary = [NSMutableDictionary new];
+        _insetsDictionary = [NSMutableDictionary new];
+        _offsetsDictionary = [NSMutableDictionary new];
+        _sizesDictionary = [NSMutableDictionary new];
+        _contentEdgeInsetsDictionary = [NSMutableDictionary new];
+        _titleOffsetsDictionary = [NSMutableDictionary new];
+        _imageOffsetsDictionary = [NSMutableDictionary new];
+        _backgroundColorsDictionary = [NSMutableDictionary new];
+        _layerCornerRadiusDictionary = [NSMutableDictionary new];
+
+        // -----
+
+        [self setInsets:UIEdgeInsetsMake(kLGPlusButtonsViewMargin, kLGPlusButtonsViewMargin, kLGPlusButtonsViewMargin, kLGPlusButtonsViewMargin) forOrientation:LGPlusButtonsViewOrientationAll];
     }
     return self;
 }
@@ -59,14 +87,22 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    
+
+    // -----
+
+    LGPlusButtonsViewOrientation orientation = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation) ? LGPlusButtonsViewOrientationPortrait : LGPlusButtonsViewOrientationLandscape;
+
+    // -----
+
     CGFloat scaleX = [[self.layer valueForKeyPath:@"transform.scale.x"] floatValue];
     CGFloat scaleY = [[self.layer valueForKeyPath:@"transform.scale.y"] floatValue];
     
     CGRect selfFrame = CGRectMake(0.f, 0.f, self.frame.size.width/scaleX, self.frame.size.height/scaleY);
-    
-    CGSize sizeToFit = CGSizeMake(selfFrame.size.width-self.contentEdgeInsets.left-self.contentEdgeInsets.right,
-                                  selfFrame.size.height-self.contentEdgeInsets.top-self.contentEdgeInsets.bottom);
+
+    UIEdgeInsets contentEdgeInsets = [self contentEdgeInsetsForOrientation:orientation];
+
+    CGSize sizeToFit = CGSizeMake(selfFrame.size.width-contentEdgeInsets.left-contentEdgeInsets.right,
+                                  selfFrame.size.height-contentEdgeInsets.top-contentEdgeInsets.bottom);
     
     if (self.titleLabel.text.length)
     {
@@ -75,7 +111,8 @@
                                             selfFrame.size.height/2-titleLabelSize.height/2+_titleOffset.y,
                                             titleLabelSize.width,
                                             titleLabelSize.height);
-        if ([UIScreen mainScreen].scale == 1.f) titleLabelFrame = CGRectIntegral(titleLabelFrame);
+        if ([UIScreen mainScreen].scale == 1.f)
+            titleLabelFrame = CGRectIntegral(titleLabelFrame);
         self.titleLabel.frame = titleLabelFrame;
     }
     
@@ -94,66 +131,254 @@
                                            selfFrame.size.height/2-imageViewSize.height/2+_imageOffset.y,
                                            imageViewSize.width,
                                            imageViewSize.height);
-        if ([UIScreen mainScreen].scale == 1.f) imageViewFrame = CGRectIntegral(imageViewFrame);
+        if ([UIScreen mainScreen].scale == 1.f)
+            imageViewFrame = CGRectIntegral(imageViewFrame);
         self.imageView.frame = imageViewFrame;
     }
 }
 
 - (CGSize)sizeThatFits:(CGSize)size
 {
+    LGPlusButtonsViewOrientation orientation = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation) ? LGPlusButtonsViewOrientationPortrait : LGPlusButtonsViewOrientationLandscape;
+
+    // -----
+
+    CGSize buttonSize = [self sizeForOrientation:orientation];
+    if (!CGSizeEqualToSize(buttonSize, CGSizeZero))
+        return buttonSize;
+
+    UIEdgeInsets contentEdgeInsets = [self contentEdgeInsetsForOrientation:orientation];
+
     CGSize titleLabelSize = (self.titleLabel.text.length ? [self.titleLabel sizeThatFits:size] : CGSizeZero);
     CGSize imageViewSize = (self.imageView.image ? [self.imageView sizeThatFits:size] : CGSizeZero);
-    
-    CGSize resultSize = CGSizeMake(MAX(titleLabelSize.width, imageViewSize.width)+self.contentEdgeInsets.left+self.contentEdgeInsets.right,
-                                   MAX(titleLabelSize.height, imageViewSize.height)+self.contentEdgeInsets.top+self.contentEdgeInsets.bottom);
-    
+
+    CGSize resultSize = CGSizeMake(MAX(titleLabelSize.width, imageViewSize.width)+contentEdgeInsets.left+contentEdgeInsets.right,
+                                   MAX(titleLabelSize.height, imageViewSize.height)+contentEdgeInsets.top+contentEdgeInsets.bottom);
+
     return resultSize;
 }
 
 #pragma mark - Setters and Getters
 
+- (void)updateParametersForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    [self setImage:[self imageForState:UIControlStateNormal forOrientation:orientation] forState:UIControlStateNormal];
+    [self setImage:[self imageForState:UIControlStateHighlighted forOrientation:orientation] forState:UIControlStateHighlighted];
+    [self setImage:[self imageForState:UIControlStateSelected forOrientation:orientation] forState:UIControlStateSelected];
+    [self setImage:[self imageForState:UIControlStateDisabled forOrientation:orientation] forState:UIControlStateDisabled];
+    [self setImage:[self imageForState:UIControlStateHighlighted|UIControlStateSelected forOrientation:orientation] forState:UIControlStateHighlighted|UIControlStateSelected];
+    [self setImage:[self imageForState:UIControlStateHighlighted|UIControlStateDisabled forOrientation:orientation] forState:UIControlStateHighlighted|UIControlStateDisabled];
+    [self setImage:[self imageForState:UIControlStateSelected|UIControlStateDisabled forOrientation:orientation] forState:UIControlStateSelected|UIControlStateDisabled];
+
+    self.titleLabel.font    = [self titleFontForOrientation:orientation];
+    self.contentEdgeInsets  = [self contentEdgeInsetsForOrientation:orientation];
+    self.insets             = [self insetsForOrientation:orientation];
+    self.size               = [self sizeForOrientation:orientation];
+    self.titleOffset        = [self titleOffsetForOrientation:orientation];
+    self.imageOffset        = [self imageOffsetForOrientation:orientation];
+    self.layer.cornerRadius = [self layerCornerRadiusForOrientation:orientation];
+}
+
+- (void)setImage:(UIImage *)image forState:(UIControlState)state forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    [_imagesDictionary setObject:image forKey:[LGPlusButtonsViewShared stringFromState:state andOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_imagesDictionary setObject:image forKey:[LGPlusButtonsViewShared stringFromState:state andOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_imagesDictionary setObject:image forKey:[LGPlusButtonsViewShared stringFromState:state andOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (UIImage *)imageForState:(UIControlState)state forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    return [_imagesDictionary objectForKey:[LGPlusButtonsViewShared stringFromState:state andOrientation:orientation]];
+}
+
+- (void)setTitleFont:(UIFont *)font forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    [_titleFontsDictionary setObject:font forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_titleFontsDictionary setObject:font forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_titleFontsDictionary setObject:font forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (UIFont *)titleFontForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    return [_titleFontsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+}
+
+- (void)setInsets:(UIEdgeInsets)insets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *insetsString = NSStringFromUIEdgeInsets(insets);
+
+    [_insetsDictionary setObject:insetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_insetsDictionary setObject:insetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_insetsDictionary setObject:insetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (UIEdgeInsets)insetsForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *insetsString = [_insetsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (insetsString ? UIEdgeInsetsFromString(insetsString) : UIEdgeInsetsZero);
+}
+
+- (void)setOffset:(CGPoint)offset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *offsetString = NSStringFromCGPoint(offset);
+
+    [_offsetsDictionary setObject:offsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_offsetsDictionary setObject:offsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_offsetsDictionary setObject:offsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CGPoint)offsetForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *offsetString = [_offsetsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (offsetString ? CGPointFromString(offsetString) : CGPointZero);
+}
+
+- (void)setSize:(CGSize)size forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *sizeString = NSStringFromCGSize(size);
+
+    [_sizesDictionary setObject:sizeString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_sizesDictionary setObject:sizeString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_sizesDictionary setObject:sizeString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CGSize)sizeForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *sizeString = [_sizesDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (sizeString ? CGSizeFromString(sizeString) : CGSizeZero);
+}
+
+- (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *contentEdgeInsetsString = NSStringFromUIEdgeInsets(contentEdgeInsets);
+
+    [_contentEdgeInsetsDictionary setObject:contentEdgeInsetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_contentEdgeInsetsDictionary setObject:contentEdgeInsetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_contentEdgeInsetsDictionary setObject:contentEdgeInsetsString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (UIEdgeInsets)contentEdgeInsetsForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *contentEdgeInsetsString = [_contentEdgeInsetsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (contentEdgeInsetsString ? UIEdgeInsetsFromString(contentEdgeInsetsString) : UIEdgeInsetsZero);
+}
+
+- (void)setTitleOffset:(CGPoint)titleOffset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *titleOffsetString = NSStringFromCGPoint(titleOffset);
+
+    [_titleOffsetsDictionary setObject:titleOffsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_titleOffsetsDictionary setObject:titleOffsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_titleOffsetsDictionary setObject:titleOffsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CGPoint)titleOffsetForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *titleOffsetString = [_titleOffsetsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (titleOffsetString ? CGPointFromString(titleOffsetString) : CGPointZero);
+}
+
+- (void)setImageOffset:(CGPoint)imageOffset forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *imageOffsetString = NSStringFromCGPoint(imageOffset);
+
+    [_imageOffsetsDictionary setObject:imageOffsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
+    {
+        [_imageOffsetsDictionary setObject:imageOffsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_imageOffsetsDictionary setObject:imageOffsetString forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CGPoint)imageOffsetForOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSString *imageOffsetString = [_imageOffsetsDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    return (imageOffsetString ? CGPointFromString(imageOffsetString) : CGPointZero);
+}
+
 - (void)setBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state
 {
-    [self setBackgroundImage:[LGPlusButton image1x1WithColor:backgroundColor] forState:state];
+    [self setBackgroundImage:[LGPlusButtonsViewShared image1x1WithColor:backgroundColor] forState:state];
+
+    [_backgroundColorsDictionary setObject:backgroundColor forKey:[LGPlusButtonsViewShared stringFromState:state]];
 }
 
-- (void)setTitleOffset:(CGPoint)titleOffset
+- (UIColor *)backgroundColorForState:(UIControlState)state
 {
-    if (!CGPointEqualToPoint(_titleOffset, titleOffset))
+    return [_backgroundColorsDictionary objectForKey:[LGPlusButtonsViewShared stringFromState:state]];
+}
+
+- (void)setLayerCornerRadius:(CGFloat)cornerRadius forOrientation:(LGPlusButtonsViewOrientation)orientation
+{
+    NSNumber *cornerRadiusNumber = [NSNumber numberWithFloat:cornerRadius];
+
+    [_layerCornerRadiusDictionary setObject:cornerRadiusNumber forKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
+
+    if (orientation == LGPlusButtonsViewOrientationAll)
     {
-        _titleOffset = titleOffset;
-        
-        [self layoutSubviews];
+        [_layerCornerRadiusDictionary setObject:cornerRadiusNumber forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationPortrait]];
+        [_layerCornerRadiusDictionary setObject:cornerRadiusNumber forKey:[LGPlusButtonsViewShared stringFromOrientation:LGPlusButtonsViewOrientationLandscape]];
     }
+
+    [self setNeedsLayout];
 }
 
-- (void)setImageOffset:(CGPoint)imageOffset
+- (CGFloat)layerCornerRadiusForOrientation:(LGPlusButtonsViewOrientation)orientation;
 {
-    if (!CGPointEqualToPoint(_imageOffset, imageOffset))
-    {
-        _imageOffset = imageOffset;
-        
-        [self layoutSubviews];
-    }
-}
+    NSNumber *cornerRadiusNumber = [_layerCornerRadiusDictionary objectForKey:[LGPlusButtonsViewShared stringFromOrientation:orientation]];
 
-#pragma mark - Support
-
-+ (UIImage *)image1x1WithColor:(UIColor *)color
-{
-    CGRect rect = CGRectMake(0.f, 0.f, 1.f, 1.f);
-    
-    UIGraphicsBeginImageContext(rect.size);
-    
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    CGContextFillRect(context, rect);
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return image;
+    return (cornerRadiusNumber ? cornerRadiusNumber.floatValue : 0.f);
 }
 
 @end

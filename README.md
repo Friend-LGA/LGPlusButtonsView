@@ -22,7 +22,7 @@ CocoaPods is a dependency manager for Objective-C, which automates and simplifie
 #### Podfile
 ```ruby
 platform :ios, '6.0'
-pod 'LGPlusButtonsView', '~> 1.0.0'
+pod 'LGPlusButtonsView', '~> 1.1.0'
 ```
 
 ### With Carthage
@@ -31,7 +31,7 @@ Carthage is a lightweight dependency manager for Swift and Objective-C. It lever
 
 #### Cartfile
 ```
-github "Friend-LGA/LGPlusButtonsView" ~> 1.0.0
+github "Friend-LGA/LGPlusButtonsView" ~> 1.1.0
 ```
 
 ## Usage
@@ -47,31 +47,59 @@ In the source files where you need to use the library, import the header file:
 You have several methods for initialization:
 
 ```objective-c
-- (instancetype)initWithView:(UIView *)view
-             numberOfButtons:(NSUInteger)numberOfButtons
-             showsPlusButton:(BOOL)showsPlusButton;
+- (instancetype)initWithNumberOfButtons:(NSUInteger)numberOfButtons
+                firstButtonIsPlusButton:(BOOL)firstButtonIsPlusButton
+                          showAfterInit:(BOOL)showAfterInit;
 ```
 
 More init methods you can find in [LGPlusButtonsView.h](https://github.com/Friend-LGA/LGPlusButtonsView/blob/master/LGPlusButtonsView/LGPlusButtonsView.h)
 
 ### Handle actions
 
-To handle actions you can use initialization methods with blocks or delegate, or implement it after initialization.
+To handle actions you can use blocks, delegate, or notifications:
 
 #### Delegate
 
 ```objective-c
 @property (assign, nonatomic) id<LGPlusButtonsViewDelegate> delegate;
 
+- (void)plusButtonsViewWillShow:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewWillHide:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewDidShow:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewDidHide:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewWillShowButtons:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewWillHideButtons:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewDidShowButtons:(LGPlusButtonsView *)plusButtonsView;
+- (void)plusButtonsViewDidHideButtons:(LGPlusButtonsView *)plusButtonsView;
 - (void)plusButtonsView:(LGPlusButtonsView *)plusButtonsView buttonPressedWithTitle:(NSString *)title description:(NSString *)description index:(NSUInteger)index;
-- (void)plusButtonsViewPlusButtonPressed:(LGPlusButtonsView *)plusButtonsView;
 ```
 
 #### Blocks
 
 ```objective-c
+@property (strong, nonatomic) void (^willShowHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^willHideHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^didShowHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^didHideHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^willShowButtonsHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^willHideButtonsHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^didShowButtonsHandler)(LGPlusButtonsView *plusButtonView);
+@property (strong, nonatomic) void (^didHideButtonsHandler)(LGPlusButtonsView *plusButtonView);
 @property (strong, nonatomic) void (^actionHandler)(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index);
-@property (strong, nonatomic) void (^plusButtonActionHandler)(LGPlusButtonsView *plusButtonView);
+```
+
+#### Notifications
+
+```objective-c
+kLGPlusButtonsViewWillShowNotification;
+kLGPlusButtonsViewWillHideNotification;
+kLGPlusButtonsViewDidShowNotification;
+kLGPlusButtonsViewDidHideNotification;
+kLGPlusButtonsViewWillShowButtonsNotification;
+kLGPlusButtonsViewWillHideButtonsNotification;
+kLGPlusButtonsViewDidShowButtonsNotification;
+kLGPlusButtonsViewDidHideButtonsNotification;
+kLGPlusButtonsViewActionNotification;
 ```
 
 ### More

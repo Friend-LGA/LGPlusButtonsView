@@ -10,6 +10,4 @@
 
 @interface PlusScrollViewController : UIViewController
 
-- (id)initWithTitle:(NSString *)title;
-
 @end

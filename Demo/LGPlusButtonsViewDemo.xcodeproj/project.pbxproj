@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A038CBF1BFB908300CA7921 /* LGPlusButtonsViewShared.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A038CBE1BFB908300CA7921 /* LGPlusButtonsViewShared.m */; };
 		4A1F8E611BEE098100D0B57E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A1F8E601BEE098100D0B57E /* LaunchScreen.storyboard */; };
-		4A3F4B5A1AA8BA51006D9DAA /* PlusViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */; };
+		4A21D59D1BF731560023AE9E /* LGPlusButtonDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A21D59C1BF731560023AE9E /* LGPlusButtonDescription.m */; };
 		4AF13A1F1BF3AD270037B073 /* LGPlusButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF13A1C1BF3AD270037B073 /* LGPlusButton.m */; };
 		4AF13A201BF3AD270037B073 /* LGPlusButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF13A1E1BF3AD270037B073 /* LGPlusButtonsView.m */; };
 		847A899A1A9F298B004A8413 /* NavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A89971A9F298B004A8413 /* NavigationController.m */; };
-		847A899B1A9F298B004A8413 /* TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A89991A9F298B004A8413 /* TableViewController.m */; };
 		847A899E1A9F2C32004A8413 /* PlusScrollViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */; };
 		84C5B7CD1A9F22C800EEEB24 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C5B7CC1A9F22C800EEEB24 /* main.m */; };
 		84C5B7D01A9F22C800EEEB24 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 84C5B7CF1A9F22C800EEEB24 /* AppDelegate.m */; };
@@ -20,17 +20,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4A038CBD1BFB908300CA7921 /* LGPlusButtonsViewShared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPlusButtonsViewShared.h; sourceTree = "<group>"; };
+		4A038CBE1BFB908300CA7921 /* LGPlusButtonsViewShared.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPlusButtonsViewShared.m; sourceTree = "<group>"; };
 		4A1F8E601BEE098100D0B57E /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		4A3F4B581AA8BA51006D9DAA /* PlusViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlusViewController.h; sourceTree = "<group>"; };
-		4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlusViewController.m; sourceTree = "<group>"; };
+		4A21D59B1BF731560023AE9E /* LGPlusButtonDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPlusButtonDescription.h; sourceTree = "<group>"; };
+		4A21D59C1BF731560023AE9E /* LGPlusButtonDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPlusButtonDescription.m; sourceTree = "<group>"; };
 		4AF13A1B1BF3AD270037B073 /* LGPlusButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPlusButton.h; sourceTree = "<group>"; };
 		4AF13A1C1BF3AD270037B073 /* LGPlusButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPlusButton.m; sourceTree = "<group>"; };
 		4AF13A1D1BF3AD270037B073 /* LGPlusButtonsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPlusButtonsView.h; sourceTree = "<group>"; };
 		4AF13A1E1BF3AD270037B073 /* LGPlusButtonsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPlusButtonsView.m; sourceTree = "<group>"; };
 		847A89961A9F298B004A8413 /* NavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavigationController.h; sourceTree = "<group>"; };
 		847A89971A9F298B004A8413 /* NavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavigationController.m; sourceTree = "<group>"; };
-		847A89981A9F298B004A8413 /* TableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewController.h; sourceTree = "<group>"; };
-		847A89991A9F298B004A8413 /* TableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewController.m; sourceTree = "<group>"; };
 		847A899C1A9F2C32004A8413 /* PlusScrollViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlusScrollViewController.h; sourceTree = "<group>"; };
 		847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlusScrollViewController.m; sourceTree = "<group>"; };
 		84C5B7C71A9F22C800EEEB24 /* LGPlusButtonsViewDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LGPlusButtonsViewDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,31 +52,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4A3F4B5D1AA8BDBA006D9DAA /* UIView */ = {
-			isa = PBXGroup;
-			children = (
-				4A3F4B581AA8BA51006D9DAA /* PlusViewController.h */,
-				4A3F4B591AA8BA51006D9DAA /* PlusViewController.m */,
-			);
-			name = UIView;
-			sourceTree = "<group>";
-		};
-		4A3F4B5E1AA8BDBE006D9DAA /* UIScrollView */ = {
-			isa = PBXGroup;
-			children = (
-				847A899C1A9F2C32004A8413 /* PlusScrollViewController.h */,
-				847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */,
-			);
-			name = UIScrollView;
-			sourceTree = "<group>";
-		};
 		4AF13A1A1BF3AD270037B073 /* LGPlusButtonsView */ = {
 			isa = PBXGroup;
 			children = (
-				4AF13A1B1BF3AD270037B073 /* LGPlusButton.h */,
-				4AF13A1C1BF3AD270037B073 /* LGPlusButton.m */,
 				4AF13A1D1BF3AD270037B073 /* LGPlusButtonsView.h */,
 				4AF13A1E1BF3AD270037B073 /* LGPlusButtonsView.m */,
+				4AF13A1B1BF3AD270037B073 /* LGPlusButton.h */,
+				4AF13A1C1BF3AD270037B073 /* LGPlusButton.m */,
+				4A21D59B1BF731560023AE9E /* LGPlusButtonDescription.h */,
+				4A21D59C1BF731560023AE9E /* LGPlusButtonDescription.m */,
+				4A038CBD1BFB908300CA7921 /* LGPlusButtonsViewShared.h */,
+				4A038CBE1BFB908300CA7921 /* LGPlusButtonsViewShared.m */,
 			);
 			name = LGPlusButtonsView;
 			path = ../LGPlusButtonsView;
@@ -114,10 +100,8 @@
 				84C5B7CF1A9F22C800EEEB24 /* AppDelegate.m */,
 				847A89961A9F298B004A8413 /* NavigationController.h */,
 				847A89971A9F298B004A8413 /* NavigationController.m */,
-				847A89981A9F298B004A8413 /* TableViewController.h */,
-				847A89991A9F298B004A8413 /* TableViewController.m */,
-				4A3F4B5D1AA8BDBA006D9DAA /* UIView */,
-				4A3F4B5E1AA8BDBE006D9DAA /* UIScrollView */,
+				847A899C1A9F2C32004A8413 /* PlusScrollViewController.h */,
+				847A899D1A9F2C32004A8413 /* PlusScrollViewController.m */,
 				84C5B7D71A9F22C800EEEB24 /* Images.xcassets */,
 				84C5B7CA1A9F22C800EEEB24 /* Supporting Files */,
 				4A1F8E601BEE098100D0B57E /* LaunchScreen.storyboard */,
@@ -204,11 +188,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AF13A1F1BF3AD270037B073 /* LGPlusButton.m in Sources */,
-				4A3F4B5A1AA8BA51006D9DAA /* PlusViewController.m in Sources */,
+				4A21D59D1BF731560023AE9E /* LGPlusButtonDescription.m in Sources */,
 				847A899E1A9F2C32004A8413 /* PlusScrollViewController.m in Sources */,
 				847A899A1A9F298B004A8413 /* NavigationController.m in Sources */,
 				84C5B7D01A9F22C800EEEB24 /* AppDelegate.m in Sources */,
-				847A899B1A9F298B004A8413 /* TableViewController.m in Sources */,
+				4A038CBF1BFB908300CA7921 /* LGPlusButtonsViewShared.m in Sources */,
 				84C5B7CD1A9F22C800EEEB24 /* main.m in Sources */,
 				4AF13A201BF3AD270037B073 /* LGPlusButtonsView.m in Sources */,
 			);
