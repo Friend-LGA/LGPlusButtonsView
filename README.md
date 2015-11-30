@@ -4,10 +4,10 @@ iOS implementation of Floating Action Button (Google Plus Button, fab), that sho
 
 ## Preview
 
-<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/Preview.gif" width="226"/>
-<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/1.png" width="226"/>
-<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/2.png" width="226"/>
-<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/3.png" width="226"/>
+<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/Preview.gif" width="218"/>
+<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/1.png" width="218"/>
+<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/2.png" width="218"/>
+<img src="https://raw.githubusercontent.com/Friend-LGA/ReadmeFiles/master/LGPlusButtonsView/3.png" width="218"/>
 
 ## Installation
 
