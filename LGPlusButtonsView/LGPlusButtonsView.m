@@ -1516,7 +1516,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
             {
                 button.showing = NO;
 
-                __block NSUInteger index = i;
+                bool isHidingLastButton = (i == _buttonsArray.count-1);
 
                 [self hideButtonAtIndex:i
                           animationType:_buttonsAppearingAnimationType
@@ -1525,7 +1525,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (result && index == _buttonsArray.count)
+                     if (result && isHidingLastButton)
                      {
                          if (completionHandler) completionHandler();
 
