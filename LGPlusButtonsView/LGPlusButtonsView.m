@@ -1462,7 +1462,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (result && index == _buttonsArray.count)
+                     if (result && index == _buttonsArray.count-1)
                      {
                          if (completionHandler) completionHandler();
 
@@ -1525,7 +1525,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
                                animated:animated
                       completionHandler:^(BOOL result)
                  {
-                     if (result && index == _buttonsArray.count)
+                     if (result && index == _buttonsArray.count-1)
                      {
                          if (completionHandler) completionHandler();
 
