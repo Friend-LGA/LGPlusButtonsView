@@ -71,6 +71,7 @@
                             forOrientation:LGPlusButtonsViewOrientationAll];
 
     [_plusButtonsViewMain setButtonsAdjustsImageWhenHighlighted:NO];
+    
     [_plusButtonsViewMain setButtonsBackgroundColor:[UIColor colorWithRed:0.f green:0.5 blue:1.f alpha:1.f] forState:UIControlStateNormal];
     [_plusButtonsViewMain setButtonsBackgroundColor:[UIColor colorWithRed:0.2 green:0.6 blue:1.f alpha:1.f] forState:UIControlStateHighlighted];
     [_plusButtonsViewMain setButtonsBackgroundColor:[UIColor colorWithRed:0.2 green:0.6 blue:1.f alpha:1.f] forState:UIControlStateHighlighted|UIControlStateSelected];
@@ -115,6 +116,9 @@
     }
 
     [self.navigationController.view addSubview:_plusButtonsViewMain];
+    
+    // Enable Tap gesture recognizer on descriptionButtons 
+    [_plusButtonsViewMain setDescriptionsTap];
 
     // -----
 
@@ -189,6 +193,8 @@
     [_plusButtonsViewExample setDescriptionsInsets:UIEdgeInsetsMake(0.f, 0.f, 0.f, 4.f) forOrientation:LGPlusButtonsViewOrientationAll];
 
     [_exampleView addSubview:_plusButtonsViewExample];
+    
+    
 }
 
 #pragma mark - Dealloc

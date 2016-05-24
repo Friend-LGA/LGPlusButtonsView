@@ -215,6 +215,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 - (void)setDescriptionsTexts:(NSArray *)texts;
 - (void)setDescriptionsTextColor:(UIColor *)textColor;
 - (void)setDescriptionsBackgroundColor:(UIColor *)backgroundColor;
+- (void)setDescriptionsTap;
 
 /** Defailt is [UIFont systemFontOfSize:14.f] */
 - (void)setDescriptionsFont:(UIFont *)font                               forOrientation:(LGPlusButtonsViewOrientation)orientation;
