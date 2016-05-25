@@ -1478,6 +1478,13 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
         NSTimeInterval delay = _buttonsAppearingAnimationSpeed/10.f;
 
+        // Enable User interaction on descriptions label when  showing
+        for (NSUInteger i=0; i<_descriptionsArray.count; i++)
+        {
+            LGPlusButtonDescription *description = _descriptionsArray[i];
+            [description setUserInteractionEnabled:YES];
+        }
+        
         for (NSInteger i=1; i<_buttonsArray.count; i++)
         {
             LGPlusButton *button = _buttonsArray[i];
@@ -1541,6 +1548,13 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
         NSTimeInterval delay = _buttonsAppearingAnimationSpeed/10.f;
 
+        // Enable User interaction on descriptions label when hidding
+        for (NSUInteger i=0; i<_descriptionsArray.count; i++)
+        {
+            LGPlusButtonDescription *description = _descriptionsArray[i];
+            [description setUserInteractionEnabled:NO];
+        }
+        
         for (NSInteger i=1; i<_buttonsArray.count; i++)
         {
             LGPlusButton *button = _buttonsArray[i];
