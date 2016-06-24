@@ -313,8 +313,16 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
     UIView *view = nil;
 
-    for (LGPlusButton *button in _buttonsArray)
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
     {
+        LGPlusButton *button = _buttonsArray[i];
+        WrapperView *buttonWrapperView = _buttonWrapperViewsArray1[i];
+        
+        // don't process event if button is hidden.
+        if (buttonWrapperView.alpha == 0.) {
+            continue;
+        }
+        
         CGPoint newPoint = [self convertPoint:point toView:button];
 
         view = [button hitTest:newPoint withEvent:event];
