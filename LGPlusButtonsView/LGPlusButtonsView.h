@@ -55,6 +55,7 @@ static NSString *const kLGPlusButtonsViewActionNotification          = @"kLGPlus
 - (void)plusButtonsViewDidShowButtons:(LGPlusButtonsView *)plusButtonsView;
 - (void)plusButtonsViewDidHideButtons:(LGPlusButtonsView *)plusButtonsView;
 - (void)plusButtonsView:(LGPlusButtonsView *)plusButtonsView buttonPressedWithTitle:(NSString *)title description:(NSString *)description index:(NSUInteger)index;
+- (void)plusButtonsView:(LGPlusButtonsView *)plusButtonsView buttonTouchDownWithTitle:(NSString *)title description:(NSString *)description index:(NSUInteger)index;
 
 @end
 

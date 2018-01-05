@@ -187,6 +187,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
             LGPlusButton *button = [LGPlusButton new];
             button.tag = i;
             [button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+			[button addTarget:self action:@selector(buttonTouchDownAction:) forControlEvents:UIControlEventTouchDown];
             if (showAfterInit) button.showing = ((firstButtonIsPlusButton && i == 0) || !firstButtonIsPlusButton);
             [wrapperView2 addSubview:button];
 
@@ -1262,6 +1263,16 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         [self hideButtonsAnimated:YES completionHandler:nil];
     else
         [self hideAnimated:YES completionHandler:nil];
+}
+
+- (void)buttonTouchDownAction:(LGPlusButton *)button
+{
+	NSUInteger index = button.tag;
+	
+	LGPlusButtonDescription *description = _descriptionsArray[index];
+	
+	if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsView:buttonTouchDownWithTitle:description:index:)])
+		[_delegate plusButtonsView:self buttonTouchDownWithTitle:button.titleLabel.text description:description.text index:button.tag];
 }
 
 - (void)buttonAction:(LGPlusButton *)button
