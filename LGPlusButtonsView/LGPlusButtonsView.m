@@ -383,6 +383,17 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 #pragma mark Buttons all
 
+- (CGRect)buttonFrame:(NSUInteger)index {
+    UIView *button = _buttonsArray[ index ];
+    if (button == nil) {
+        NSAssert(NO, @"Unexpected button index: %@, buttons count: %@", @(index), @(_buttonsArray.count));
+        return CGRectZero;
+    }
+
+    CGRect frame = [self convertRect:button.bounds fromView:button];
+    return frame;
+}
+
 - (void)setButtonsTitles:(NSArray *)titles forState:(UIControlState)state
 {
     NSAssert(_buttonsArray.count == titles.count, kLGPlusButtonsViewAssertionWarning(@"titles"));

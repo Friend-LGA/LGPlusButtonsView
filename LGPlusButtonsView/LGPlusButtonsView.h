@@ -151,6 +151,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 
 #pragma mark - Buttons all
 
+- (CGRect)buttonFrame:(NSUInteger)index;
+
 - (void)setButtonsTitles:(NSArray *)titles                     forState:(UIControlState)state;
 - (void)setButtonsTitleColor:(UIColor *)titleColor             forState:(UIControlState)state;
 - (void)setButtonsTitleColors:(NSArray *)titleColors           forState:(UIControlState)state;
