@@ -86,7 +86,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonsAppearingAnimationType)
     LGPlusButtonsAppearingAnimationTypeCrossDissolve                   = 1,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideHorizontal = 2,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical   = 3,
-    LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop             = 4
+    LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop             = 4,
+	LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical = 5
 };
 
 typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)

@@ -1602,10 +1602,11 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
             [LGPlusButtonsView animateStandardWithDuration:duration
                                                      delay:0.f
+                                             animationType:type
                                                 animations:^(void)
-             {
-                 _coverView.alpha = 1.f;
-             }
+                                                {
+                                                    _coverView.alpha = 1.f;
+                                                }
                                                 completion:nil];
         }
     }
@@ -1635,25 +1636,40 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
             [LGPlusButtonsView animateStandardWithDuration:duration
                                                      delay:0.f
+                                             animationType:type
                                                 animations:^(void)
-             {
-                 _coverView.alpha = 0.f;
-             }
+                                                {
+                                                    _coverView.alpha = 0.f;
+                                                }
                                                 completion:^(BOOL finished)
-             {
-                 if (finished)
-                 {
-                     _coverView.hidden = YES;
+                                                {
+                                                    if (finished)
+                                                    {
+                                                        _coverView.hidden = YES;
 
-                     if ([self.superview isKindOfClass:[UIScrollView class]])
-                         [(UIScrollView *)self.superview setScrollEnabled:YES];
-                 }
-             }];
+                                                        if ([self.superview isKindOfClass:[UIScrollView class]])
+                                                            [(UIScrollView *)self.superview setScrollEnabled:YES];
+                                                    }
+                                                }];
         }
     }
 }
 
 #pragma mark - Button Animations
+
+
+- (CGFloat)buttonStartOffset:(NSUInteger)index {
+    LGPlusButtonsViewOrientation orientation = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation) ? LGPlusButtonsViewOrientationPortrait : LGPlusButtonsViewOrientationLandscape;
+    CGFloat offset = 0;
+    for (NSUInteger i = 0; i < index; i++) {
+        WrapperView *buttonWrapper = _buttonWrapperViewsArray1[i];
+        LGPlusButton *button = _buttonsArray[i];
+        UIEdgeInsets buttonInsets = [button insetsForOrientation:orientation];
+        offset += buttonWrapper.frame.size.height + buttonInsets.top + buttonInsets.bottom;
+    }
+    return offset;
+}
+
 
 - (void)showButtonAtIndex:(NSUInteger)index
             animationType:(LGPlusButtonsAppearingAnimationType)type
@@ -1677,10 +1693,17 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         if (scaleX && scaleY)
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(scaleX, scaleY));
     }
+    if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical)
+    {
+        CGFloat ty = [self buttonStartOffset:index];
+        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation([[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.x"] floatValue],
+                ty));
+    }
     else
     {
         transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation([[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.x"] floatValue],
                                                                                         [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.y"] floatValue]));
+
     }
 
     buttonWrapperView1.alpha = [(CALayer *)buttonWrapperView1.layer.presentationLayer opacity];
@@ -1704,19 +1727,26 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
     }
     else
     {
-        CGFloat dif = 1.f-buttonWrapperView1.alpha;
-        NSTimeInterval duration = animationSpeed*dif;
-
+        CGFloat dif;
+        NSTimeInterval duration;
+        if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+            duration = (0.2 + index * 0.05);
+            delay = 0;
+        } else {
+            dif = 1.f-buttonWrapperView1.alpha;
+            duration = animationSpeed*dif;
+        }
         [LGPlusButtonsView animateStandardWithDuration:duration
                                                  delay:delay
+                                         animationType:type
                                             animations:^(void)
-         {
-             [self showAnimationsWithButtonAtIndex:index];
-         }
+                                            {
+                                                [self showAnimationsWithButtonAtIndex:index];
+                                            }
                                             completion:^(BOOL finished)
-         {
-             if (completionHandler) completionHandler(finished);
-         }];
+                                            {
+                                                if (completionHandler) completionHandler(finished);
+                                            }];
     }
 }
 
@@ -1788,9 +1818,15 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
     {
         if (animated)
         {
-            CGFloat dif = buttonWrapperView1.alpha-0.f;
-            NSTimeInterval duration = animationSpeed*dif*_hideAnimationCoef;
-
+            CGFloat dif;
+            NSTimeInterval duration;
+            if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+                duration = 0.2 + index * 0.05;
+                delay = 0;
+            } else {
+                dif = buttonWrapperView1.alpha-0.f;
+                duration = animationSpeed*dif*_hideAnimationCoef;
+            }
             [UIView animateWithDuration:duration
                                   delay:delay
                                 options:0
@@ -1845,6 +1881,13 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, buttonWrapperView1.frame.size.height));
         else
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, -buttonWrapperView1.frame.size.height));
+    }
+    else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+        CGFloat ty = [self buttonStartOffset:index];
+        if (_position == LGPlusButtonsViewPositionTopLeft || _position == LGPlusButtonsViewPositionTopRight) {
+            ty = -ty;
+        }
+        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, ty));
     }
     else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop)
     {
@@ -2045,17 +2088,27 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 #pragma mark - Support
 
-+ (void)animateStandardWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay animations:(void(^)())animations completion:(void(^)(BOOL finished))completion
++ (void)animateStandardWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay animationType:(LGPlusButtonsAppearingAnimationType)type animations:(void(^)())animations completion:(void(^)(BOOL finished))completion
 {
-    if ([UIDevice currentDevice].systemVersion.floatValue >= 7.0)
+    if (@available(iOS 7.0, *))
     {
-        [UIView animateWithDuration:duration
-                              delay:delay
-             usingSpringWithDamping:1.f
-              initialSpringVelocity:0.5
-                            options:0
-                         animations:animations
-                         completion:completion];
+        if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+            [UIView animateWithDuration:duration
+                                  delay:0
+                 usingSpringWithDamping:0.6f
+                  initialSpringVelocity:0.
+                                options:0
+                             animations:animations
+                             completion:completion];
+        } else {
+            [UIView animateWithDuration:duration
+                                  delay:delay
+                 usingSpringWithDamping:1.f
+                  initialSpringVelocity:0.5
+                                options:0
+                             animations:animations
+                             completion:completion];
+        }
     }
     else
     {

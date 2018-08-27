@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
     s.name = 'LGPlusButtonsView'
-    s.version = '1.1.4'
+    s.version = '1.1.5'
     s.platform = :ios, '6.0'
     s.license = 'MIT'
     s.homepage = 'https://github.com/Friend-LGA/LGPlusButtonsView'
