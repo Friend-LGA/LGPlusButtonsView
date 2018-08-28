@@ -155,6 +155,22 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
         UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
         [_coverView addGestureRecognizer:tapGesture];
+		
+		UISwipeGestureRecognizer *slideRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+		[_coverView addGestureRecognizer:slideRightGestureRecognizer];
+
+		UISwipeGestureRecognizer *slideLeftGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideLeftGestureRecognizer.direction = UISwipeGestureRecognizerDirectionLeft;
+		[_coverView addGestureRecognizer:slideLeftGestureRecognizer];
+
+		UISwipeGestureRecognizer *slideUpGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideUpGestureRecognizer.direction = UISwipeGestureRecognizerDirectionUp;
+		[_coverView addGestureRecognizer:slideUpGestureRecognizer];
+
+		UISwipeGestureRecognizer *slideDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideDownGestureRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
+		[_coverView addGestureRecognizer:slideDownGestureRecognizer];
 
         // -----
 
