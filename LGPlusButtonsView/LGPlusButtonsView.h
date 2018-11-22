@@ -99,7 +99,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 
 @property (assign, nonatomic, readonly, getter=isShowing) BOOL showing;
 @property (assign, nonatomic, readonly, getter=isButtonsShowing) BOOL buttonsShowing;
-@property (assign, nonatomic, getter=isShowHideOnScroll) BOOL showHideOnScroll;
+@property (assign, nonatomic) BOOL isShowHideOnScroll;
 /** Hide additional buttons on scroll. Default is NO */
 @property (assign, nonatomic, getter=isHideButtonsOnScroll) BOOL hideButtonsOnScroll;
 /** Default is YES */

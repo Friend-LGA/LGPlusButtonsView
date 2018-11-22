@@ -116,7 +116,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         _appearingAnimationSpeed = 0.3;
         _buttonsAppearingAnimationSpeed = 0.3;
         _hideAnimationCoef = 0.66;
-        _showHideOnScroll = YES;
+        self.isShowHideOnScroll = YES;
         _disableShowHideOnScrollIfContentSizeLessThenFrame = YES;
 
         // -----
