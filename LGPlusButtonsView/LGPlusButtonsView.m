@@ -72,9 +72,6 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
     LGPlusButtonDescriptionsPositionRight = 1
 };
 
-@property (assign, nonatomic, getter=isObserversAdded) BOOL observersAdded;
-@property (assign, nonatomic, getter=isObserversForScrollViewAdded) BOOL observersForScrollViewAdded;
-
 @property (assign, nonatomic) LGPlusButtonDescriptionsPosition descriptionsPosition;
 
 @property (assign, nonatomic) UIView *parentView;
@@ -300,6 +297,9 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 - (void)dealloc
 {
+    [self removeObservers:self.superview];
+    [self setObservedScrollView:nil];
+    
 #if DEBUG
     NSLog(@"%s [Line %d]", __PRETTY_FUNCTION__, __LINE__);
 #endif
@@ -336,10 +336,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 - (void)willMoveToSuperview:(UIView *)newSuperview
 {
     [self removeObservers:self.superview];
-
-    if (newSuperview)
-        [self addObservers:newSuperview];
-
+    [self addObservers:newSuperview];
+    
     [super willMoveToSuperview:newSuperview];
 }
 
@@ -1907,58 +1905,42 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 - (void)addObservers:(UIView *)view
 {
-    if (!self.isObserversAdded && view)
-    {
-        _observersAdded = YES;
+    if (!view) return;
+    
+    [view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
+    
+    if ([view isKindOfClass:[UIScrollView class]])
+        [self setObservedScrollView:view];
+}
 
-        [view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
-
-        if ([view isKindOfClass:[UIScrollView class]])
-        {
-            [view addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-            [view addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-            [view addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
-        }
-
-        if (_observedScrollView)
-        {
-            NSAssert([_observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
-
-            _observersForScrollViewAdded = YES;
-
-            [_observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-            [_observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-            [_observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
-        }
-    }
+- (void)addScrollViewObservers:(UIScrollView *)observedScrollView
+{
+    if (!observedScrollView) return;
+    
+    NSAssert([observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
+    
+    [observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
+    [observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+    [observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)removeObservers:(UIView *)view
 {
-    if (self.isObserversAdded && view)
-    {
-        _observersAdded = NO;
+    if (!view) return;
+    
+    [view removeObserver:self forKeyPath:@"frame"];
+    
+    if (view == self.observedScrollView)
+        [self setObservedScrollView:nil];
+}
 
-        [view removeObserver:self forKeyPath:@"frame"];
-
-        if ([view isKindOfClass:[UIScrollView class]])
-        {
-            [view removeObserver:self forKeyPath:@"contentInset"];
-            [view removeObserver:self forKeyPath:@"contentOffset"];
-            [view removeObserver:self forKeyPath:@"contentSize"];
-        }
-
-        if (self.isObserversForScrollViewAdded)
-        {
-            NSAssert([_observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
-
-            _observersForScrollViewAdded = NO;
-
-            [_observedScrollView removeObserver:self forKeyPath:@"contentInset"];
-            [_observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
-            [_observedScrollView removeObserver:self forKeyPath:@"contentSize"];
-        }
-    }
+- (void)removeScrollViewObservers:(UIScrollView *)observedScrollView
+{
+    if (!observedScrollView) return;
+    
+    [observedScrollView removeObserver:self forKeyPath:@"contentInset"];
+    [observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
+    [observedScrollView removeObserver:self forKeyPath:@"contentSize"];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -2025,25 +2007,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 - (void)setObservedScrollView:(UIScrollView *)observedScrollView
 {
-    if (observedScrollView)
-        NSAssert([observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
-    
-    if (self.isObserversForScrollViewAdded)
-    {
-        [_observedScrollView removeObserver:self forKeyPath:@"contentInset"];
-        [_observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
-        [_observedScrollView removeObserver:self forKeyPath:@"contentSize"];
-    }
-    
-    if (observedScrollView)
-    {
-        _observersForScrollViewAdded = YES;
-        
-        [observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-        [observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-        [observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
-    }
-    else _observersForScrollViewAdded = NO;
+    [self removeScrollViewObservers:self.observedScrollView];
+    [self addScrollViewObservers:observedScrollView];
     
     _observedScrollView = observedScrollView;
 }
