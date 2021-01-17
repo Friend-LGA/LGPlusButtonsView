@@ -55,6 +55,7 @@ static NSString *const kLGPlusButtonsViewActionNotification          = @"kLGPlus
 - (void)plusButtonsViewDidShowButtons:(LGPlusButtonsView *)plusButtonsView;
 - (void)plusButtonsViewDidHideButtons:(LGPlusButtonsView *)plusButtonsView;
 - (void)plusButtonsView:(LGPlusButtonsView *)plusButtonsView buttonPressedWithTitle:(NSString *)title description:(NSString *)description index:(NSUInteger)index;
+- (void)plusButtonsView:(LGPlusButtonsView *)plusButtonsView buttonTouchDownWithTitle:(NSString *)title description:(NSString *)description index:(NSUInteger)index;
 
 @end
 
@@ -85,7 +86,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonsAppearingAnimationType)
     LGPlusButtonsAppearingAnimationTypeCrossDissolve                   = 1,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideHorizontal = 2,
     LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical   = 3,
-    LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop             = 4
+    LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop             = 4,
+	LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical = 5
 };
 
 typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
@@ -97,7 +99,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 
 @property (assign, nonatomic, readonly, getter=isShowing) BOOL showing;
 @property (assign, nonatomic, readonly, getter=isButtonsShowing) BOOL buttonsShowing;
-@property (assign, nonatomic, getter=isShowHideOnScroll) BOOL showHideOnScroll;
+@property (assign, nonatomic) BOOL isShowHideOnScroll;
 /** Hide additional buttons on scroll. Default is NO */
 @property (assign, nonatomic, getter=isHideButtonsOnScroll) BOOL hideButtonsOnScroll;
 /** Default is YES */
@@ -149,6 +151,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonAnimationType)
 - (UIEdgeInsets)contentEdgeInsetsForOrientation:(LGPlusButtonsViewOrientation)orientation;
 
 #pragma mark - Buttons all
+
+- (CGRect)buttonFrame:(NSUInteger)index;
 
 - (void)setButtonsTitles:(NSArray *)titles                     forState:(UIControlState)state;
 - (void)setButtonsTitleColor:(UIColor *)titleColor             forState:(UIControlState)state;

@@ -63,6 +63,8 @@
     _plusButtonsViewMain.coverColor = [UIColor colorWithWhite:1.f alpha:0.7];
     _plusButtonsViewMain.position = LGPlusButtonsViewPositionBottomRight;
     _plusButtonsViewMain.plusButtonAnimationType = LGPlusButtonAnimationTypeRotate;
+	_plusButtonsViewMain.appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndSlideVertical;
+	_plusButtonsViewMain.buttonsAppearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical;
 
     [_plusButtonsViewMain setButtonsTitles:@[@"+", @"", @"", @""] forState:UIControlStateNormal];
     [_plusButtonsViewMain setDescriptionsTexts:@[@"", @"Take a photo", @"Choose from gallery", @"Send a message"]];
@@ -116,79 +118,79 @@
 
     [self.navigationController.view addSubview:_plusButtonsViewMain];
 
-    // -----
-
-    _plusButtonsViewNavBar = [LGPlusButtonsView plusButtonsViewWithNumberOfButtons:3
-                                                           firstButtonIsPlusButton:NO
-                                                                     showAfterInit:NO
-                                                                     actionHandler:^(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index)
-                              {
-                                  NSLog(@"actionHandler | title: %@, description: %@, index: %lu", title, description, (long unsigned)index);
-                              }];
-
-    _plusButtonsViewNavBar.showHideOnScroll = NO;
-    _plusButtonsViewNavBar.appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop;
-    _plusButtonsViewNavBar.position = LGPlusButtonsViewPositionTopRight;
-
-    [_plusButtonsViewNavBar setButtonsTitles:@[@"1", @"2", @"3"] forState:UIControlStateNormal];
-    [_plusButtonsViewNavBar setDescriptionsTexts:@[@"Description 1", @"Description 2", @"Description 3"]];
-
-    [_plusButtonsViewNavBar setButtonsTitleFont:[UIFont boldSystemFontOfSize:32.f] forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewNavBar setButtonsSize:CGSizeMake(52.f, 52.f) forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewNavBar setButtonsLayerCornerRadius:52.f/2.f forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewNavBar setButtonsBackgroundColor:[UIColor colorWithRed:0.f green:0.5 blue:1.f alpha:1.f] forState:UIControlStateNormal];
-    [_plusButtonsViewNavBar setButtonsBackgroundColor:[UIColor colorWithRed:0.2 green:0.6 blue:1.f alpha:1.f] forState:UIControlStateHighlighted];
-    [_plusButtonsViewNavBar setButtonsLayerShadowColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:1.f]];
-    [_plusButtonsViewNavBar setButtonsLayerShadowOpacity:0.5];
-    [_plusButtonsViewNavBar setButtonsLayerShadowRadius:3.f];
-    [_plusButtonsViewNavBar setButtonsLayerShadowOffset:CGSizeMake(0.f, 2.f)];
-
-    [_plusButtonsViewNavBar setDescriptionsTextColor:[UIColor whiteColor]];
-    [_plusButtonsViewNavBar setDescriptionsBackgroundColor:[UIColor colorWithWhite:0.f alpha:0.66]];
-    [_plusButtonsViewNavBar setDescriptionsLayerCornerRadius:6.f forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewNavBar setDescriptionsContentEdgeInsets:UIEdgeInsetsMake(4.f, 8.f, 4.f, 8.f) forOrientation:LGPlusButtonsViewOrientationAll];
-
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-    {
-        [_plusButtonsViewNavBar setButtonsSize:CGSizeMake(44.f, 44.f) forOrientation:LGPlusButtonsViewOrientationLandscape];
-        [_plusButtonsViewNavBar setButtonsLayerCornerRadius:44.f/2.f forOrientation:LGPlusButtonsViewOrientationLandscape];
-        [_plusButtonsViewNavBar setButtonsTitleFont:[UIFont systemFontOfSize:24.f] forOrientation:LGPlusButtonsViewOrientationLandscape];
-    }
-
-    [self.scrollView addSubview:_plusButtonsViewNavBar];
-
-    // -----
-
-    _plusButtonsViewExample = [LGPlusButtonsView plusButtonsViewWithNumberOfButtons:3
-                                                         firstButtonIsPlusButton:YES
-                                                                   showAfterInit:YES
-                                                                   actionHandler:^(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index)
-                            {
-                                NSLog(@"actionHandler | title: %@, description: %@, index: %lu", title, description, (long unsigned)index);
-                            }];
-
-    _plusButtonsViewExample.position = LGPlusButtonsViewPositionBottomLeft;
-    _plusButtonsViewExample.plusButtonAnimationType = LGPlusButtonAnimationTypeCrossDissolve;
-    _plusButtonsViewExample.buttonsAppearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolve;
-
-    [_plusButtonsViewExample setButtonsTitles:@[@"+", @"1", @"2"] forState:UIControlStateNormal];
-    [_plusButtonsViewExample setDescriptionsTexts:@[@"", @"Description 1", @"Description 2"]];
-
-    [_plusButtonsViewExample setButtonsBackgroundColor:[UIColor colorWithRed:1.f green:0.f blue:0.5 alpha:1.f] forState:UIControlStateNormal];
-    [_plusButtonsViewExample setButtonsBackgroundColor:[UIColor colorWithRed:1.f green:0.2 blue:0.6 alpha:1.f] forState:UIControlStateHighlighted];
-    [_plusButtonsViewExample setButtonsBackgroundColor:[UIColor colorWithRed:1.f green:0.2 blue:0.6 alpha:1.f] forState:UIControlStateHighlighted|UIControlStateSelected];
-    [_plusButtonsViewExample setButtonsSize:CGSizeMake(44.f, 44.f) forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewExample setButtonsLayerBorderWidth:2.f];
-    [_plusButtonsViewExample setButtonsLayerBorderColor:[UIColor colorWithWhite:0.9 alpha:1.f]];
-    [_plusButtonsViewExample setButtonsTitleFont:[UIFont systemFontOfSize:24.f] forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewExample setButtonAtIndex:0 titleOffset:CGPointMake(0.f, -2.f) forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewExample setButtonAtIndex:0 title:@"-" forState:UIControlStateSelected];
-
-    [_plusButtonsViewExample setDescriptionsTextColor:[UIColor whiteColor]];
-    [_plusButtonsViewExample setDescriptionsFont:[UIFont boldSystemFontOfSize:18.f] forOrientation:LGPlusButtonsViewOrientationAll];
-    [_plusButtonsViewExample setDescriptionsInsets:UIEdgeInsetsMake(0.f, 0.f, 0.f, 4.f) forOrientation:LGPlusButtonsViewOrientationAll];
-
-    [_exampleView addSubview:_plusButtonsViewExample];
+//    // -----
+//
+//    _plusButtonsViewNavBar = [LGPlusButtonsView plusButtonsViewWithNumberOfButtons:3
+//                                                           firstButtonIsPlusButton:NO
+//                                                                     showAfterInit:NO
+//                                                                     actionHandler:^(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index)
+//                              {
+//                                  NSLog(@"actionHandler | title: %@, description: %@, index: %lu", title, description, (long unsigned)index);
+//                              }];
+//
+//    _plusButtonsViewNavBar.showHideOnScroll = NO;
+//    _plusButtonsViewNavBar.appearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop;
+//    _plusButtonsViewNavBar.position = LGPlusButtonsViewPositionTopRight;
+//
+//    [_plusButtonsViewNavBar setButtonsTitles:@[@"1", @"2", @"3"] forState:UIControlStateNormal];
+//    [_plusButtonsViewNavBar setDescriptionsTexts:@[@"Description 1", @"Description 2", @"Description 3"]];
+//
+//    [_plusButtonsViewNavBar setButtonsTitleFont:[UIFont boldSystemFontOfSize:32.f] forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewNavBar setButtonsSize:CGSizeMake(52.f, 52.f) forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewNavBar setButtonsLayerCornerRadius:52.f/2.f forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewNavBar setButtonsBackgroundColor:[UIColor colorWithRed:0.f green:0.5 blue:1.f alpha:1.f] forState:UIControlStateNormal];
+//    [_plusButtonsViewNavBar setButtonsBackgroundColor:[UIColor colorWithRed:0.2 green:0.6 blue:1.f alpha:1.f] forState:UIControlStateHighlighted];
+//    [_plusButtonsViewNavBar setButtonsLayerShadowColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:1.f]];
+//    [_plusButtonsViewNavBar setButtonsLayerShadowOpacity:0.5];
+//    [_plusButtonsViewNavBar setButtonsLayerShadowRadius:3.f];
+//    [_plusButtonsViewNavBar setButtonsLayerShadowOffset:CGSizeMake(0.f, 2.f)];
+//
+//    [_plusButtonsViewNavBar setDescriptionsTextColor:[UIColor whiteColor]];
+//    [_plusButtonsViewNavBar setDescriptionsBackgroundColor:[UIColor colorWithWhite:0.f alpha:0.66]];
+//    [_plusButtonsViewNavBar setDescriptionsLayerCornerRadius:6.f forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewNavBar setDescriptionsContentEdgeInsets:UIEdgeInsetsMake(4.f, 8.f, 4.f, 8.f) forOrientation:LGPlusButtonsViewOrientationAll];
+//
+//    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+//    {
+//        [_plusButtonsViewNavBar setButtonsSize:CGSizeMake(44.f, 44.f) forOrientation:LGPlusButtonsViewOrientationLandscape];
+//        [_plusButtonsViewNavBar setButtonsLayerCornerRadius:44.f/2.f forOrientation:LGPlusButtonsViewOrientationLandscape];
+//        [_plusButtonsViewNavBar setButtonsTitleFont:[UIFont systemFontOfSize:24.f] forOrientation:LGPlusButtonsViewOrientationLandscape];
+//    }
+//
+//    [self.scrollView addSubview:_plusButtonsViewNavBar];
+//
+//    // -----
+//
+//    _plusButtonsViewExample = [LGPlusButtonsView plusButtonsViewWithNumberOfButtons:3
+//                                                         firstButtonIsPlusButton:YES
+//                                                                   showAfterInit:YES
+//                                                                   actionHandler:^(LGPlusButtonsView *plusButtonView, NSString *title, NSString *description, NSUInteger index)
+//                            {
+//                                NSLog(@"actionHandler | title: %@, description: %@, index: %lu", title, description, (long unsigned)index);
+//                            }];
+//
+//    _plusButtonsViewExample.position = LGPlusButtonsViewPositionBottomLeft;
+//    _plusButtonsViewExample.plusButtonAnimationType = LGPlusButtonAnimationTypeCrossDissolve;
+//    _plusButtonsViewExample.buttonsAppearingAnimationType = LGPlusButtonsAppearingAnimationTypeCrossDissolve;
+//
+//    [_plusButtonsViewExample setButtonsTitles:@[@"+", @"1", @"2"] forState:UIControlStateNormal];
+//    [_plusButtonsViewExample setDescriptionsTexts:@[@"", @"Description 1", @"Description 2"]];
+//
+//    [_plusButtonsViewExample setButtonsBackgroundColor:[UIColor colorWithRed:1.f green:0.f blue:0.5 alpha:1.f] forState:UIControlStateNormal];
+//    [_plusButtonsViewExample setButtonsBackgroundColor:[UIColor colorWithRed:1.f green:0.2 blue:0.6 alpha:1.f] forState:UIControlStateHighlighted];
+//    [_plusButtonsViewExample setButtonsBackgroundColor:[UIColor colorWithRed:1.f green:0.2 blue:0.6 alpha:1.f] forState:UIControlStateHighlighted|UIControlStateSelected];
+//    [_plusButtonsViewExample setButtonsSize:CGSizeMake(44.f, 44.f) forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewExample setButtonsLayerBorderWidth:2.f];
+//    [_plusButtonsViewExample setButtonsLayerBorderColor:[UIColor colorWithWhite:0.9 alpha:1.f]];
+//    [_plusButtonsViewExample setButtonsTitleFont:[UIFont systemFontOfSize:24.f] forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewExample setButtonAtIndex:0 titleOffset:CGPointMake(0.f, -2.f) forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewExample setButtonAtIndex:0 title:@"-" forState:UIControlStateSelected];
+//
+//    [_plusButtonsViewExample setDescriptionsTextColor:[UIColor whiteColor]];
+//    [_plusButtonsViewExample setDescriptionsFont:[UIFont boldSystemFontOfSize:18.f] forOrientation:LGPlusButtonsViewOrientationAll];
+//    [_plusButtonsViewExample setDescriptionsInsets:UIEdgeInsetsMake(0.f, 0.f, 0.f, 4.f) forOrientation:LGPlusButtonsViewOrientationAll];
+//
+//    [_exampleView addSubview:_plusButtonsViewExample];
 }
 
 #pragma mark - Dealloc

@@ -72,9 +72,6 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
     LGPlusButtonDescriptionsPositionRight = 1
 };
 
-@property (assign, nonatomic, getter=isObserversAdded) BOOL observersAdded;
-@property (assign, nonatomic, getter=isObserversForScrollViewAdded) BOOL observersForScrollViewAdded;
-
 @property (assign, nonatomic) LGPlusButtonDescriptionsPosition descriptionsPosition;
 
 @property (assign, nonatomic) UIView *parentView;
@@ -119,7 +116,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         _appearingAnimationSpeed = 0.3;
         _buttonsAppearingAnimationSpeed = 0.3;
         _hideAnimationCoef = 0.66;
-        _showHideOnScroll = YES;
+        self.isShowHideOnScroll = YES;
         _disableShowHideOnScrollIfContentSizeLessThenFrame = YES;
 
         // -----
@@ -158,6 +155,22 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
         UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
         [_coverView addGestureRecognizer:tapGesture];
+		
+		UISwipeGestureRecognizer *slideRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+		[_coverView addGestureRecognizer:slideRightGestureRecognizer];
+
+		UISwipeGestureRecognizer *slideLeftGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideLeftGestureRecognizer.direction = UISwipeGestureRecognizerDirectionLeft;
+		[_coverView addGestureRecognizer:slideLeftGestureRecognizer];
+
+		UISwipeGestureRecognizer *slideUpGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideUpGestureRecognizer.direction = UISwipeGestureRecognizerDirectionUp;
+		[_coverView addGestureRecognizer:slideUpGestureRecognizer];
+
+		UISwipeGestureRecognizer *slideDownGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
+		slideDownGestureRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
+		[_coverView addGestureRecognizer:slideDownGestureRecognizer];
 
         // -----
 
@@ -190,6 +203,7 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
             LGPlusButton *button = [LGPlusButton new];
             button.tag = i;
             [button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+			[button addTarget:self action:@selector(buttonTouchDownAction:) forControlEvents:UIControlEventTouchDown];
             if (showAfterInit) button.showing = ((firstButtonIsPlusButton && i == 0) || !firstButtonIsPlusButton);
             [wrapperView2 addSubview:button];
 
@@ -300,6 +314,9 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 - (void)dealloc
 {
+    [self removeObservers:self.superview];
+    [self setObservedScrollView:nil];
+    
 #if DEBUG
     NSLog(@"%s [Line %d]", __PRETTY_FUNCTION__, __LINE__);
 #endif
@@ -313,8 +330,16 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
     UIView *view = nil;
 
-    for (LGPlusButton *button in _buttonsArray)
+    for (NSUInteger i=0; i<_buttonsArray.count; i++)
     {
+        LGPlusButton *button = _buttonsArray[i];
+        WrapperView *buttonWrapperView = _buttonWrapperViewsArray1[i];
+        
+        // don't process event if button is hidden.
+        if (buttonWrapperView.alpha == 0.) {
+            continue;
+        }
+        
         CGPoint newPoint = [self convertPoint:point toView:button];
 
         view = [button hitTest:newPoint withEvent:event];
@@ -336,10 +361,8 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 - (void)willMoveToSuperview:(UIView *)newSuperview
 {
     [self removeObservers:self.superview];
-
-    if (newSuperview)
-        [self addObservers:newSuperview];
-
+    [self addObservers:newSuperview];
+    
     [super willMoveToSuperview:newSuperview];
 }
 
@@ -375,6 +398,17 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 }
 
 #pragma mark Buttons all
+
+- (CGRect)buttonFrame:(NSUInteger)index {
+    UIView *button = _buttonsArray[ index ];
+    if (button == nil) {
+        NSAssert(NO, @"Unexpected button index: %@, buttons count: %@", @(index), @(_buttonsArray.count));
+        return CGRectZero;
+    }
+
+    CGRect frame = [self convertRect:button.bounds fromView:button];
+    return frame;
+}
 
 - (void)setButtonsTitles:(NSArray *)titles forState:(UIControlState)state
 {
@@ -1258,6 +1292,16 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         [self hideAnimated:YES completionHandler:nil];
 }
 
+- (void)buttonTouchDownAction:(LGPlusButton *)button
+{
+	NSUInteger index = button.tag;
+	
+	LGPlusButtonDescription *description = _descriptionsArray[index];
+	
+	if (_delegate && [_delegate respondsToSelector:@selector(plusButtonsView:buttonTouchDownWithTitle:description:index:)])
+		[_delegate plusButtonsView:self buttonTouchDownWithTitle:button.titleLabel.text description:description.text index:button.tag];
+}
+
 - (void)buttonAction:(LGPlusButton *)button
 {
     NSUInteger index = button.tag;
@@ -1574,10 +1618,11 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
             [LGPlusButtonsView animateStandardWithDuration:duration
                                                      delay:0.f
+                                             animationType:type
                                                 animations:^(void)
-             {
-                 _coverView.alpha = 1.f;
-             }
+                                                {
+                                                    _coverView.alpha = 1.f;
+                                                }
                                                 completion:nil];
         }
     }
@@ -1607,25 +1652,40 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
             [LGPlusButtonsView animateStandardWithDuration:duration
                                                      delay:0.f
+                                             animationType:type
                                                 animations:^(void)
-             {
-                 _coverView.alpha = 0.f;
-             }
+                                                {
+                                                    _coverView.alpha = 0.f;
+                                                }
                                                 completion:^(BOOL finished)
-             {
-                 if (finished)
-                 {
-                     _coverView.hidden = YES;
+                                                {
+                                                    if (finished)
+                                                    {
+                                                        _coverView.hidden = YES;
 
-                     if ([self.superview isKindOfClass:[UIScrollView class]])
-                         [(UIScrollView *)self.superview setScrollEnabled:YES];
-                 }
-             }];
+                                                        if ([self.superview isKindOfClass:[UIScrollView class]])
+                                                            [(UIScrollView *)self.superview setScrollEnabled:YES];
+                                                    }
+                                                }];
         }
     }
 }
 
 #pragma mark - Button Animations
+
+
+- (CGFloat)buttonStartOffset:(NSUInteger)index {
+    LGPlusButtonsViewOrientation orientation = UIInterfaceOrientationIsPortrait([UIApplication sharedApplication].statusBarOrientation) ? LGPlusButtonsViewOrientationPortrait : LGPlusButtonsViewOrientationLandscape;
+    CGFloat offset = 0;
+    for (NSUInteger i = 0; i < index; i++) {
+        WrapperView *buttonWrapper = _buttonWrapperViewsArray1[i];
+        LGPlusButton *button = _buttonsArray[i];
+        UIEdgeInsets buttonInsets = [button insetsForOrientation:orientation];
+        offset += buttonWrapper.frame.size.height + buttonInsets.top + buttonInsets.bottom;
+    }
+    return offset;
+}
+
 
 - (void)showButtonAtIndex:(NSUInteger)index
             animationType:(LGPlusButtonsAppearingAnimationType)type
@@ -1649,10 +1709,17 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         if (scaleX && scaleY)
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(scaleX, scaleY));
     }
+    if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical)
+    {
+        CGFloat ty = [self buttonStartOffset:index];
+        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation([[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.x"] floatValue],
+                ty));
+    }
     else
     {
         transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation([[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.x"] floatValue],
                                                                                         [[(CALayer *)buttonWrapperView1.layer.presentationLayer valueForKeyPath:@"transform.translation.y"] floatValue]));
+
     }
 
     buttonWrapperView1.alpha = [(CALayer *)buttonWrapperView1.layer.presentationLayer opacity];
@@ -1676,19 +1743,26 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
     }
     else
     {
-        CGFloat dif = 1.f-buttonWrapperView1.alpha;
-        NSTimeInterval duration = animationSpeed*dif;
-
+        CGFloat dif;
+        NSTimeInterval duration;
+        if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+            duration = (0.2 + index * 0.05);
+            delay = 0;
+        } else {
+            dif = 1.f-buttonWrapperView1.alpha;
+            duration = animationSpeed*dif;
+        }
         [LGPlusButtonsView animateStandardWithDuration:duration
                                                  delay:delay
+                                         animationType:type
                                             animations:^(void)
-         {
-             [self showAnimationsWithButtonAtIndex:index];
-         }
+                                            {
+                                                [self showAnimationsWithButtonAtIndex:index];
+                                            }
                                             completion:^(BOOL finished)
-         {
-             if (completionHandler) completionHandler(finished);
-         }];
+                                            {
+                                                if (completionHandler) completionHandler(finished);
+                                            }];
     }
 }
 
@@ -1760,9 +1834,15 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
     {
         if (animated)
         {
-            CGFloat dif = buttonWrapperView1.alpha-0.f;
-            NSTimeInterval duration = animationSpeed*dif*_hideAnimationCoef;
-
+            CGFloat dif;
+            NSTimeInterval duration;
+            if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+                duration = 0.2 + index * 0.05;
+                delay = 0;
+            } else {
+                dif = buttonWrapperView1.alpha-0.f;
+                duration = animationSpeed*dif*_hideAnimationCoef;
+            }
             [UIView animateWithDuration:duration
                                   delay:delay
                                 options:0
@@ -1817,6 +1897,13 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, buttonWrapperView1.frame.size.height));
         else
             transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, -buttonWrapperView1.frame.size.height));
+    }
+    else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+        CGFloat ty = [self buttonStartOffset:index];
+        if (_position == LGPlusButtonsViewPositionTopLeft || _position == LGPlusButtonsViewPositionTopRight) {
+            ty = -ty;
+        }
+        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(0.f, ty));
     }
     else if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndPop)
     {
@@ -1907,58 +1994,42 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 - (void)addObservers:(UIView *)view
 {
-    if (!self.isObserversAdded && view)
-    {
-        _observersAdded = YES;
+    if (!view) return;
+    
+    [view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
+    
+    if ([view isKindOfClass:[UIScrollView class]])
+        [self setObservedScrollView:view];
+}
 
-        [view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
-
-        if ([view isKindOfClass:[UIScrollView class]])
-        {
-            [view addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-            [view addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-            [view addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
-        }
-
-        if (_observedScrollView)
-        {
-            NSAssert([_observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
-
-            _observersForScrollViewAdded = YES;
-
-            [_observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-            [_observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-            [_observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
-        }
-    }
+- (void)addScrollViewObservers:(UIScrollView *)observedScrollView
+{
+    if (!observedScrollView) return;
+    
+    NSAssert([observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
+    
+    [observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
+    [observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+    [observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)removeObservers:(UIView *)view
 {
-    if (self.isObserversAdded && view)
-    {
-        _observersAdded = NO;
+    if (!view) return;
+    
+    [view removeObserver:self forKeyPath:@"frame"];
+    
+    if (view == self.observedScrollView)
+        [self setObservedScrollView:nil];
+}
 
-        [view removeObserver:self forKeyPath:@"frame"];
-
-        if ([view isKindOfClass:[UIScrollView class]])
-        {
-            [view removeObserver:self forKeyPath:@"contentInset"];
-            [view removeObserver:self forKeyPath:@"contentOffset"];
-            [view removeObserver:self forKeyPath:@"contentSize"];
-        }
-
-        if (self.isObserversForScrollViewAdded)
-        {
-            NSAssert([_observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
-
-            _observersForScrollViewAdded = NO;
-
-            [_observedScrollView removeObserver:self forKeyPath:@"contentInset"];
-            [_observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
-            [_observedScrollView removeObserver:self forKeyPath:@"contentSize"];
-        }
-    }
+- (void)removeScrollViewObservers:(UIScrollView *)observedScrollView
+{
+    if (!observedScrollView) return;
+    
+    [observedScrollView removeObserver:self forKeyPath:@"contentInset"];
+    [observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
+    [observedScrollView removeObserver:self forKeyPath:@"contentSize"];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -2025,42 +2096,35 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
 - (void)setObservedScrollView:(UIScrollView *)observedScrollView
 {
-    if (observedScrollView)
-        NSAssert([observedScrollView isKindOfClass:[UIScrollView class]], @"observedScrollView needs to have UIScrollView kind of class");
-    
-    if (self.isObserversForScrollViewAdded)
-    {
-        [_observedScrollView removeObserver:self forKeyPath:@"contentInset"];
-        [_observedScrollView removeObserver:self forKeyPath:@"contentOffset"];
-        [_observedScrollView removeObserver:self forKeyPath:@"contentSize"];
-    }
-    
-    if (observedScrollView)
-    {
-        _observersForScrollViewAdded = YES;
-        
-        [observedScrollView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-        [observedScrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
-        [observedScrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
-    }
-    else _observersForScrollViewAdded = NO;
+    [self removeScrollViewObservers:self.observedScrollView];
+    [self addScrollViewObservers:observedScrollView];
     
     _observedScrollView = observedScrollView;
 }
 
 #pragma mark - Support
 
-+ (void)animateStandardWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay animations:(void(^)())animations completion:(void(^)(BOOL finished))completion
++ (void)animateStandardWithDuration:(NSTimeInterval)duration delay:(NSTimeInterval)delay animationType:(LGPlusButtonsAppearingAnimationType)type animations:(void(^)())animations completion:(void(^)(BOOL finished))completion
 {
-    if ([UIDevice currentDevice].systemVersion.floatValue >= 7.0)
+    if (@available(iOS 7.0, *))
     {
-        [UIView animateWithDuration:duration
-                              delay:delay
-             usingSpringWithDamping:1.f
-              initialSpringVelocity:0.5
-                            options:0
-                         animations:animations
-                         completion:completion];
+        if (type == LGPlusButtonsAppearingAnimationTypeCrossDissolveAndFullySlideVertical) {
+            [UIView animateWithDuration:duration
+                                  delay:0
+                 usingSpringWithDamping:0.6f
+                  initialSpringVelocity:0.
+                                options:0
+                             animations:animations
+                             completion:completion];
+        } else {
+            [UIView animateWithDuration:duration
+                                  delay:delay
+                 usingSpringWithDamping:1.f
+                  initialSpringVelocity:0.5
+                                options:0
+                             animations:animations
+                             completion:completion];
+        }
     }
     else
     {
