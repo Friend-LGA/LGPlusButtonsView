@@ -1274,7 +1274,9 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         else
             [self showButtonsAnimated:YES completionHandler:nil];
     }
-
+    if (index != 0) {
+        [self hideButtonsAnimated:YES completionHandler:nil];
+    }
     // -----
 
     if (_actionHandler) _actionHandler(self, button.titleLabel.text, description.text, button.tag);
