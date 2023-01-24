@@ -315,6 +315,9 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
 
     for (LGPlusButton *button in _buttonsArray)
     {
+        if (!button.isShowing) {
+            continue;
+        }
         CGPoint newPoint = [self convertPoint:point toView:button];
 
         view = [button hitTest:newPoint withEvent:event];
@@ -1271,7 +1274,9 @@ typedef NS_ENUM(NSUInteger, LGPlusButtonDescriptionsPosition)
         else
             [self showButtonsAnimated:YES completionHandler:nil];
     }
-
+    if (index != 0) {
+        [self hideButtonsAnimated:YES completionHandler:nil];
+    }
     // -----
 
     if (_actionHandler) _actionHandler(self, button.titleLabel.text, description.text, button.tag);
